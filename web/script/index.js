@@ -65,11 +65,38 @@ function main() {
 
 function main2() {
     console.log(Gizmo);
+    //事件监听
     var PlayArea=new Gizmo.PlayArea();
     PlayArea.createPlayArea();
-    var GameComponents=new Gizmo.GameComponents(PlayArea.gl);
-    GameComponents.drawComponents(GameComponents.gl.TRIANGLES,3);
     var GameGrid=new Gizmo.GameGrid(PlayArea.gl);
-    console.log(GameGrid);
-    GameGrid.drawComponents(GameGrid.gl.TRIANGLES,3);
+    GameGrid.createGrid();
+    GameGrid.drawComponents(GameGrid.gl.LINES,80);
+    var canvas=document.getElementById("playArea");
+    //鼠标移动事件监听
+    canvas.onmouseover=function () {
+        drawAllHandler=setInterval(function () {
+            drawAll();
+        },16);
+        canvas.onmousemove = function (ev) {
+            GameGrid.gridBox.color=GameGrid.gridBox.GREEN;
+            var x=ev.clientX;
+            var y=ev.clientY;
+            var rect=ev.target.getBoundingClientRect();
+            x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
+            y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
+            mousePosition=[x,y];
+        };
+        canvas.onmouseout = function (ev) {
+            clearInterval(drawAllHandler);
+            GameGrid.gridBox.color=GameGrid.gridBox.WHITE;
+            drawAll();
+            canvas.onmousemove=null;
+        };
+    };
+    //重新绘制
+    function drawAll() {
+        PlayArea.gl.clear((PlayArea.gl.COLOR_BUFFER_BIT));
+        GameGrid.createGrid();
+        GameGrid.gridBox.createBox();
+    }
 }

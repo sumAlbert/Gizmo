@@ -20,18 +20,67 @@ Gizmo=(function () {
 
         }
     }
+    this.GameGridBox=function (gl) {
+        this.inherit = GameComponents;
+        this.inherit(gl);
+        delete this.inherit;
+        this.verticesArray=[];
+        this.gridBoxSize=[1.0,2.0];
+        this.GREEN=[0.0,1.0,0.0,1.0];
+        this.RED=[1.0,0.0,0.0,1.0];
+        this.WHITE=[1.0,1.0,1.0,1.0];
+        this.createBox=function () {
+            this.verticesArray=[];
+            console.log(Math.floor(10*mousePosition[0])+10);
+            console.log(Math.floor(10*mousePosition[1])+10);
+            var leftBottomX=Math.floor(10*mousePosition[0])/10;
+            var leftBottomY=Math.floor(10*mousePosition[1])/10;
+            this.verticesArray.push(leftBottomX,leftBottomY);
+            this.verticesArray.push(leftBottomX+0.1,leftBottomY);
+            this.verticesArray.push(leftBottomX+0.1,leftBottomY+0.1);
+            this.verticesArray.push(leftBottomX,leftBottomY+0.1);
+            console.log(this);
+            this.drawComponents(this.gl.LINE_LOOP,4);
+        }
+    };
+
     this.GameGrid=function (gl) {
         this.inherit = GameComponents;
         this.inherit(gl);
         delete this.inherit;
+        this.verticesArray=[];
+        this.gridBoxs=[];
+        for(var i=0;i<20;i++){
+            this.gridBoxs[i]=[];
+        }
+        this.gridBox=new GameGridBox(gl);
+        this.createGrid=function () {
+            this.verticesArray=[];
+            var x_start=-1.0;
+            while(Math.abs(x_start-1.0)>0.0001){
+                x_start=x_start+0.1;
+                this.verticesArray.push(x_start,-1.0);
+                this.verticesArray.push(x_start,1.0);
+            }
+            x_start=-1.0;
+            while(Math.abs(x_start-1.0)>0.0001){
+                x_start=x_start+0.1;
+                this.verticesArray.push(-1.0,x_start);
+                this.verticesArray.push(1.0,x_start);
+            }
+            this.drawComponents(this.gl.LINES,80);
+        };
     };
+
     this.GameComponents=function GameComponents(gl) {
         this.ANGLE=0;//旋转角度
         this.center=[0.0,0.0];//旋转中心
         this.xformMatrix=new Matrix4();//平移旋转矩阵
         this.xrecoverMatrix =new Matrix4();//恢复矩阵
         this.pointSize=10.0;//点的尺寸
-        this.color=[1.0,1.0,1.0,1.0];
+        this.color=[1.0,1.0,1.0,1.0];//颜色
+        this.speed=[0.0,0.0];
+        this.direction=[0.0,0.0];
         this.verticesArray=[
             -0.9, 0.7, -0.9, 0.0, 0.0, 0.0,0.0, 0.7
         ];
@@ -55,6 +104,7 @@ Gizmo=(function () {
             this.gl.drawArrays(kind,0,n);
         }
     };
+
     this.PlayArea=function PlayArea() {
         this.gl=null;
         this.SHADERS=[{
@@ -98,6 +148,6 @@ Gizmo=(function () {
         PanelController:panelController,
         PlayArea: PlayArea,
         GameComponents: GameComponents,
-        GameGrid: GameGrid
+        GameGrid: GameGrid,
     }
 })();
