@@ -64,40 +64,89 @@ function main() {
 }
 
 function main2() {
-    console.log(Gizmo);
-    //事件监听
-    var PlayArea=new Gizmo.PlayArea();
-    PlayArea.createPlayArea();
-    var GameGrid=new Gizmo.GameGrid();
-    GameGrid.createGrid();
-    GameGrid.drawComponents(PlayArea.gl,PlayArea.gl.LINES,80);
+    var game=new Gizmo.Game();
+    var playArea=game.playArea;
+    var gameGrid=playArea.gameGrid;
+    var gameGridBox=gameGrid.gridBox;
     var canvas=document.getElementById("playArea");
+
+
+    //点击新建事件
+    document.getElementById("new-playArea").addEventListener("click",function () {
+        alert("123");
+    });
     // 鼠标移动事件监听
-    // canvas.onmouseover=function () {
-    //     drawAllHandler=setInterval(function () {
-    //         drawAll();
-    //     },16);
-    //     canvas.onmousemove = function (ev) {
-    //         GameGrid.gridBox.color=GameGrid.gridBox.GREEN;
-    //         var x=ev.clientX;
-    //         var y=ev.clientY;
-    //         var rect=ev.target.getBoundingClientRect();
-    //         x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
-    //         y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
-    //         mousePosition=[x,y];
-    //     };
-    //     canvas.onmouseout = function (ev) {
-    //         clearInterval(drawAllHandler);
-    //         GameGrid.gridBox.color=GameGrid.gridBox.WHITE;
-    //         drawAll();
-    //         canvas.onmousemove=null;
-    //     };
-    // };
-    //
-    // //重新绘制
-    // function drawAll() {
-    //     PlayArea.gl.clear((PlayArea.gl.COLOR_BUFFER_BIT));
-    //     GameGrid.createGrid(PlayArea.gl);
-    //     GameGrid.gridBox.createBox(PlayArea.gl);
-    // }
+    canvas.onmouseover=function (ev) {
+        drawAllHandler=setInterval(function () {
+            playArea.drawAll();
+        },20);
+        var clickEventIsOk=true;
+        switch (game.state){
+            case 1:{
+                    var triangle=new Gizmo.Triangle();
+
+                    triangle.update([0.0,0.0]);
+                    playArea.playAreaComponents.push(triangle);
+                    gameGridBox.gridBoxSize=[triangle.size,triangle.size];
+                    break;
+                }
+            default:
+                break;
+        }
+        canvas.onmousemove = function (ev) {
+            gameGrid.gridBox.color=gameGrid.GREEN;
+            var x=ev.clientX;
+            var y=ev.clientY;
+            var rect=ev.target.getBoundingClientRect();
+            x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
+            y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
+            playArea.mousePosition=[x,y];
+            switch (game.state){
+                case 1: {
+                    playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                    if(gameGrid.compatibleBoxs(triangle,1)){
+                        gameGridBox.color=gameGrid.GREEN;
+                        clickEventIsOk=true;
+                    }
+                    else{
+                        gameGridBox.color=gameGrid.RED;
+                        clickEventIsOk=false;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        };
+        canvas.onmousedown = function (ev) {
+            switch (game.state){
+                case 1:{
+                    if(clickEventIsOk){
+                        triangle.fixFlag=true;
+                        clickEventIsOk=false;
+                        game.state=0;
+                        gameGrid.fillGridBoxs(triangle,1);
+                        canvas.onmousedown = null;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+
+        };
+        canvas.onmouseout = function (ev) {
+            clearInterval(drawAllHandler);
+            gameGrid.gridBox.color=gameGrid.WHITE;
+            if(game.state===1)
+                playArea.playAreaComponents.pop();
+            playArea.drawAll();
+            canvas.onmousemove=null;
+        };
+    };
+    //点击新建三角形
+    document.getElementById("tool-item1").addEventListener("click",function () {
+        if(game.state!==1)
+            game.state=1;
+    });
 }

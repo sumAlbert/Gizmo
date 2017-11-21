@@ -14,29 +14,58 @@ Gizmo=(function () {
                         '  gl_FragColor = u_FragColor;\n' +
                         '}\n'
     }];//测试用
+
+    this.Triangle=function () {
+        this.inherit = GameComponents;
+        this.inherit();
+        delete this.inherit;
+
+        this.id="Triangle"+this.randomPostfix();
+        this.size=3;
+        this.fixFlag=false;
+        this.update=function (mousePosition) {
+            this.verticesArray=[];
+            var leftUpperX=Math.floor(10*mousePosition[0])/10;
+            var leftUpperY=Math.floor(10*mousePosition[1])/10+0.1;
+            this.center=[leftUpperX+0.05*this.size,leftUpperY-0.05*this.size];
+            this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]+0.05*this.size);
+            this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]-0.05*this.size);
+            this.verticesArray.push(this.center[0]+0.05*this.size,this.center[1]+0.05*this.size);
+        };
+        this.draw=function (gl,mousePosition) {
+            if(!this.fixFlag)
+                this.update(mousePosition);
+            this.drawComponents(gl,gl.TRIANGLES,3);
+        };
+    };
     //绘制单个网格
     this.GameGridBox=function () {
         this.inherit = GameComponents;
         this.inherit();
         delete this.inherit;
+
+        this.id="GameGridBox"+this.randomPostfix();
         this.verticesArray=[];
         this.gridBoxSize=[1.0,1.0];
-        this.GREEN=[0.0,1.0,0.0,1.0];
-        this.RED=[1.0,0.0,0.0,1.0];
-        this.WHITE=[1.0,1.0,1.0,1.0];
-        this.createBox=function (gl) {
+        this.init=function () {
             this.verticesArray=[];
-            console.log(Math.floor(10*mousePosition[0])+10);
-            console.log(Math.floor(10*mousePosition[1])+10);
-            var leftBottomX=Math.floor(10*mousePosition[0])/10;
-            var leftBottomY=Math.floor(10*mousePosition[1])/10;
-            this.verticesArray.push(leftBottomX,leftBottomY);
-            this.verticesArray.push(leftBottomX+0.1,leftBottomY);
-            this.verticesArray.push(leftBottomX+0.1,leftBottomY+0.1);
-            this.verticesArray.push(leftBottomX,leftBottomY+0.1);
-            console.log(this);
+        };
+        this.update=function (mousePosition) {
+            this.verticesArray=[];
+            if(mousePosition){
+                var leftUpperX=Math.floor(10*mousePosition[0])/10;
+                var leftUpperY=Math.floor(10*mousePosition[1])/10+0.1;
+                this.verticesArray.push(leftUpperX,leftUpperY);
+                this.verticesArray.push(leftUpperX+0.1*this.gridBoxSize[0],leftUpperY);
+                this.verticesArray.push(leftUpperX+0.1*this.gridBoxSize[0],leftUpperY-0.1*this.gridBoxSize[1]);
+                this.verticesArray.push(leftUpperX,leftUpperY-0.1*this.gridBoxSize[1]);
+            }
+        };
+        this.draw=function (gl,mousePosition) {
+            if(!this.fixFlag)
+                this.update(mousePosition);
             this.drawComponents(gl,gl.LINE_LOOP,4);
-        }
+        };
     };
     //网格
     this.GameGrid=function () {
@@ -45,14 +74,19 @@ Gizmo=(function () {
         this.inherit();
         delete this.inherit;
         //属性
+        this.id="GameGrid"+this.randomPostfix();
         this.verticesArray=[];
-        this.gridBoxs=[];
-        for(var i=0;i<20;i++){
-            this.gridBoxs[i]=[];
-        }
+        this.gridBoxs=[];//记录每一格的属性
         this.gridBox=new GameGridBox();
-        this.createGrid=function () {
-            this.id="GameGrid"+this.randomPostfix();
+        this.init=function(){
+            for(var i=0;i<20;i++){
+                this.gridBoxs[i]=[];
+            }
+            this.verticesArray=[];
+            this.update();
+            this.gridBox.init();
+        };
+        this.update=function (mousePosition) {
             this.verticesArray=[];
             var x_start=-1.0;
             while(Math.abs(x_start-1.0)>0.0001){
@@ -67,6 +101,87 @@ Gizmo=(function () {
                 this.verticesArray.push(1.0,x_start);
             }
         };
+        this.draw=function (gl,mousePosition) {
+            if(!this.fixFlag)
+                this.update(mousePosition);
+            this.drawComponents(gl,gl.LINES,80);
+        };
+        this.fillGridBoxs=function (component,kind) {
+            switch (kind){
+                default: {
+                    var centerX=Math.floor(10*component.center[0])+10;
+                    var centerY=Math.floor(10*component.center[1])+10;
+                    if(component.size%2===0){
+                        var leftBottomX=centerX-component.size/2;
+                        var leftBottomY=centerY-component.size/2;
+                        for(var i=0;i<component.size;i++){
+                            for(var j=0;j<component.size;j++){
+                                this.gridBoxs[leftBottomX+i][leftBottomY+j]=component.id;
+                            }
+                        }
+                    }
+                    else{
+                        var leftBottomX=centerX-(component.size-1)/2;
+                        var leftBottomY=centerY-(component.size-1)/2;
+                        for(var i=0;i<component.size;i++){
+                            for(var j=0;j<component.size;j++){
+                                this.gridBoxs[leftBottomX+i][leftBottomY+j]=component.id;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        };
+        this.compatibleBoxs=function (component,kind) {
+            var result=true;
+            switch (kind){
+                default: {
+                    var centerX=Math.floor(10*component.center[0])+10;
+                    var centerY=Math.floor(10*component.center[1])+10;
+                    if(component.size%2===0){
+                        var leftBottomX=centerX-component.size/2;
+                        var leftBottomY=centerY-component.size/2;
+                        for(var i=0;i<component.size;i++){
+                            for(var j=0;j<component.size;j++){
+                                if(leftBottomX+i>19){
+                                    result=false;
+                                    break;
+                                }
+                                if(leftBottomY+j>19){
+                                    result=false;
+                                    break;
+                                }
+                                if(this.gridBoxs[leftBottomX+i][leftBottomY+j]&&this.gridBoxs[leftBottomX+i][leftBottomY+j].length>2){
+                                    result=false;
+                                }
+                            }
+                        }
+                    }
+                    else{
+                        var leftBottomX=centerX-(component.size-1)/2;
+                        var leftBottomY=centerY-(component.size-1)/2;
+                        for(var i=0;i<component.size;i++){
+                            for(var j=0;j<component.size;j++){
+                                if(leftBottomX+i>19){
+                                    result=false;
+                                    break;
+                                }
+                                if(leftBottomY+j>19){
+                                    result=false;
+                                    break;
+                                }
+                                if(this.gridBoxs[leftBottomX+i][leftBottomY+j]&&this.gridBoxs[leftBottomX+i][leftBottomY+j].length>2){
+                                    result=false;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            return result;
+        };
     };
 
     this.GameComponents=function GameComponents() {
@@ -79,6 +194,12 @@ Gizmo=(function () {
         this.color=[1.0,1.0,1.0,1.0];//颜色
         this.speed=[0.0,0.0];//速度
         this.verticesArray=[];//边界点
+        this.size=1;
+        this.fixFlag=false;
+
+        this.GREEN=[0.0,1.0,0.0,1.0];
+        this.RED=[1.0,0.0,0.0,1.0];
+        this.WHITE=[1.0,1.0,1.0,1.0];
 
         //TODO 包装到函数里面
         this.xformMatrix.setRotate(this.ANGLE,0,0,1);//平移旋转变换矩阵
@@ -99,7 +220,7 @@ Gizmo=(function () {
             gl.vertexAttribPointer(this.a_Position,2, gl.FLOAT,false, 0, 0);
             gl.enableVertexAttribArray(this.a_Position);
             gl.drawArrays(kind,0,n);
-        }
+        };
         this.randomPostfix=function () {
             return (Math.floor(1000000*Math.random())+''+Math.floor(1000000*Math.random())).substring(0,10);
         }
@@ -108,6 +229,7 @@ Gizmo=(function () {
     this.PlayArea=function PlayArea() {
         this.gl=null;
         this.playAreaComponents=[];
+        this.mousePosition=[0.0,0.0];
         this.SHADERS=[{
             VASHADER_SOURCE:'attribute vec4 a_Position;\n' +
             'attribute float a_PointSize;\n'+
@@ -123,6 +245,7 @@ Gizmo=(function () {
             '  gl_FragColor = u_FragColor;\n' +
             '}\n'
         }];
+        this.gameGrid=new Gizmo.GameGrid();
         this.createPlayArea=function(){
             this.gl=getWebGLContext(document.getElementById("playArea"));
             if(!this.gl){
@@ -144,13 +267,42 @@ Gizmo=(function () {
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
         };
         this.drawAll=function () {
-            
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+            for(var playAreaComponent in this.playAreaComponents){
+                this.playAreaComponents[playAreaComponent].draw(this.gl,this.mousePosition);
+            }
+        };
+        this.init=function () {
+            this.gameGrid.init();
+            this.playAreaComponents=[];
+            this.playAreaComponents.push(this.gameGrid);
+            this.playAreaComponents.push(this.gameGrid.gridBox);
+            console.log(this.gameGrid);
+            this.mousePosition=[0.0,0.0];
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+            this.drawAll();
         }
     };
+    
+    this.Game=function () {
+        this.GREEN=[0.0,1.0,0.0,1.0];
+        this.RED=[1.0,0.0,0.0,1.0];
+        this.WHITE=[1.0,1.0,1.0,1.0];
+        this.state=0;//1-三角形
+        this.modes=0; //0-Building Model;1-Running Model
+        this.playArea=new Gizmo.PlayArea();
+
+        //初始化
+        this.playArea.createPlayArea();
+        this.playArea.init();
+    };
+
     return{
         SHADERS: SHADERS,
         PlayArea: PlayArea,
         GameComponents: GameComponents,
-        GameGrid: GameGrid
+        GameGrid: GameGrid,
+        Game: Game,
+        Triangle: Triangle
     }
 })();
