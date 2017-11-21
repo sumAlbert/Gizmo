@@ -14,22 +14,17 @@ Gizmo=(function () {
                         '  gl_FragColor = u_FragColor;\n' +
                         '}\n'
     }];//测试用
-    var panelController=new PanelController();
-    function PanelController() {
-        this.newPlayArea=function () {
-
-        }
-    }
-    this.GameGridBox=function (gl) {
+    //绘制单个网格
+    this.GameGridBox=function () {
         this.inherit = GameComponents;
-        this.inherit(gl);
+        this.inherit();
         delete this.inherit;
         this.verticesArray=[];
-        this.gridBoxSize=[1.0,2.0];
+        this.gridBoxSize=[1.0,1.0];
         this.GREEN=[0.0,1.0,0.0,1.0];
         this.RED=[1.0,0.0,0.0,1.0];
         this.WHITE=[1.0,1.0,1.0,1.0];
-        this.createBox=function () {
+        this.createBox=function (gl) {
             this.verticesArray=[];
             console.log(Math.floor(10*mousePosition[0])+10);
             console.log(Math.floor(10*mousePosition[1])+10);
@@ -40,21 +35,24 @@ Gizmo=(function () {
             this.verticesArray.push(leftBottomX+0.1,leftBottomY+0.1);
             this.verticesArray.push(leftBottomX,leftBottomY+0.1);
             console.log(this);
-            this.drawComponents(this.gl.LINE_LOOP,4);
+            this.drawComponents(gl,gl.LINE_LOOP,4);
         }
     };
-
-    this.GameGrid=function (gl) {
+    //网格
+    this.GameGrid=function () {
+        //继承GameComponents
         this.inherit = GameComponents;
-        this.inherit(gl);
+        this.inherit();
         delete this.inherit;
+        //属性
         this.verticesArray=[];
         this.gridBoxs=[];
         for(var i=0;i<20;i++){
             this.gridBoxs[i]=[];
         }
-        this.gridBox=new GameGridBox(gl);
+        this.gridBox=new GameGridBox();
         this.createGrid=function () {
+            this.id="GameGrid"+this.randomPostfix();
             this.verticesArray=[];
             var x_start=-1.0;
             while(Math.abs(x_start-1.0)>0.0001){
@@ -68,45 +66,48 @@ Gizmo=(function () {
                 this.verticesArray.push(-1.0,x_start);
                 this.verticesArray.push(1.0,x_start);
             }
-            this.drawComponents(this.gl.LINES,80);
         };
     };
 
-    this.GameComponents=function GameComponents(gl) {
+    this.GameComponents=function GameComponents() {
+        this.id="";
         this.ANGLE=0;//旋转角度
         this.center=[0.0,0.0];//旋转中心
         this.xformMatrix=new Matrix4();//平移旋转矩阵
         this.xrecoverMatrix =new Matrix4();//恢复矩阵
         this.pointSize=10.0;//点的尺寸
         this.color=[1.0,1.0,1.0,1.0];//颜色
-        this.speed=[0.0,0.0];
-        this.direction=[0.0,0.0];
-        this.verticesArray=[
-            -0.9, 0.7, -0.9, 0.0, 0.0, 0.0,0.0, 0.7
-        ];
-        this.gl=gl;
-        this.xformMatrix.setRotate(this.ANGLE,0,0,1);
+        this.speed=[0.0,0.0];//速度
+        this.verticesArray=[];//边界点
+
+        //TODO 包装到函数里面
+        this.xformMatrix.setRotate(this.ANGLE,0,0,1);//平移旋转变换矩阵
         this.xformMatrix.translate(-this.center[0],-this.center[1],0);
-        this.xrecoverMatrix.translate(this.center[0],this.center[1],0);
-        this.drawComponents=function (kind,n) {
-            var a_Position = this.gl.getAttribLocation(this.gl.program,'a_Position');
-            var u_xformMatrix = this.gl.getUniformLocation(this.gl.program,'u_xformMatrix');
-            var u_recoverMatrix = this.gl.getUniformLocation(this.gl.program,'u_recoverMatrix');
-            var a_PointSize = this.gl.getAttribLocation(this.gl.program,'a_PointSize');
-            var u_FragColor = this.gl.getUniformLocation(this.gl.program,'u_FragColor');
-            this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array(this.verticesArray),this.gl.STATIC_DRAW);
-            this.gl.uniform4f(u_FragColor,this.color[0],this.color[1],this.color[2],this.color[3]);
-            this.gl.uniformMatrix4fv(u_xformMatrix, false, this.xformMatrix.elements);
-            this.gl.uniformMatrix4fv(u_recoverMatrix, false, this.xrecoverMatrix.elements);
-            this.gl.vertexAttrib1f(a_PointSize,this.pointSize);
-            this.gl.vertexAttribPointer(this.a_Position,2, this.gl.FLOAT,false, 0, 0);
-            this.gl.enableVertexAttribArray(this.a_Position);
-            this.gl.drawArrays(kind,0,n);
+        this.xrecoverMatrix.translate(this.center[0],this.center[1],0);//恢复矩阵
+        //绘制图形
+        this.drawComponents=function (gl,kind,n) {
+            var a_Position = gl.getAttribLocation(gl.program,'a_Position');
+            var u_xformMatrix = gl.getUniformLocation(gl.program,'u_xformMatrix');
+            var u_recoverMatrix = gl.getUniformLocation(gl.program,'u_recoverMatrix');
+            var a_PointSize = gl.getAttribLocation(gl.program,'a_PointSize');
+            var u_FragColor = gl.getUniformLocation(gl.program,'u_FragColor');
+            gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(this.verticesArray),gl.STATIC_DRAW);
+            gl.uniform4f(u_FragColor,this.color[0],this.color[1],this.color[2],this.color[3]);
+            gl.uniformMatrix4fv(u_xformMatrix, false, this.xformMatrix.elements);
+            gl.uniformMatrix4fv(u_recoverMatrix, false, this.xrecoverMatrix.elements);
+            gl.vertexAttrib1f(a_PointSize,this.pointSize);
+            gl.vertexAttribPointer(this.a_Position,2, gl.FLOAT,false, 0, 0);
+            gl.enableVertexAttribArray(this.a_Position);
+            gl.drawArrays(kind,0,n);
+        }
+        this.randomPostfix=function () {
+            return (Math.floor(1000000*Math.random())+''+Math.floor(1000000*Math.random())).substring(0,10);
         }
     };
 
     this.PlayArea=function PlayArea() {
         this.gl=null;
+        this.playAreaComponents=[];
         this.SHADERS=[{
             VASHADER_SOURCE:'attribute vec4 a_Position;\n' +
             'attribute float a_PointSize;\n'+
@@ -142,12 +143,14 @@ Gizmo=(function () {
             }
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
         };
+        this.drawAll=function () {
+            
+        }
     };
     return{
         SHADERS: SHADERS,
-        PanelController:panelController,
         PlayArea: PlayArea,
         GameComponents: GameComponents,
-        GameGrid: GameGrid,
+        GameGrid: GameGrid
     }
 })();
