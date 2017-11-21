@@ -69,6 +69,9 @@ function main2() {
     var gameGrid=playArea.gameGrid;
     var gameGridBox=gameGrid.gridBox;
     var canvas=document.getElementById("playArea");
+    var physicsEngine=new Gizmo.PhysicsEngine();
+    var vect1=new Gizmo.Vector();
+    console.log(vect1.heightCross(1.0,0.0,0.0,0.0,-1.0,1.0));
 
 
     //点击新建事件
@@ -77,76 +80,184 @@ function main2() {
     });
     // 鼠标移动事件监听
     canvas.onmouseover=function (ev) {
-        drawAllHandler=setInterval(function () {
-            playArea.drawAll();
-        },20);
-        var clickEventIsOk=true;
-        switch (game.state){
-            case 1:{
+        if(game.modes===0){
+            drawAllHandler=setInterval(function () {
+                playArea.drawAll();
+            },20);
+            var clickEventIsOk=true;
+            switch (game.state){
+                case 1:{
                     var triangle=new Gizmo.Triangle();
-
                     triangle.update([0.0,0.0]);
+                    if(!isNaN(document.getElementById("tool-item1-size").value)){
+                        triangle.size=document.getElementById("tool-item1-size").value;
+                    }
+                    if(!isNaN(document.getElementById("tool-item1-angel").value)){
+                        triangle.angel=document.getElementById("tool-item1-angel").value;
+                    }
                     playArea.playAreaComponents.push(triangle);
                     gameGridBox.gridBoxSize=[triangle.size,triangle.size];
                     break;
                 }
-            default:
-                break;
+                case 2:{
+                    var circle=new Gizmo.Circle();
+                    circle.update([0.0,0.0]);
+                    if(!isNaN(document.getElementById("tool-item2-size").value)){
+                        circle.size=document.getElementById("tool-item2-size").value;
+                    }
+                    if(!isNaN(document.getElementById("tool-item2-angel").value)){
+                        circle.angel=document.getElementById("tool-item2-angel").value;
+                    }
+                    playArea.playAreaComponents.push(circle);
+                    gameGridBox.gridBoxSize=[circle.size,circle.size];
+                    break;
+                }
+                case 3:{
+                    var ball=new Gizmo.Ball();
+                    ball.update([0.0,0.0]);
+                    if(!isNaN(document.getElementById("tool-item3-size").value)){
+                        ball.size=document.getElementById("tool-item3-size").value;
+                    }
+                    if(!isNaN(document.getElementById("tool-item3-angel").value)){
+                        ball.angel=document.getElementById("tool-item3-angel").value;
+                    }
+                    playArea.playAreaComponents.push(ball);
+                    gameGridBox.gridBoxSize=[ball.size,ball.size];
+                    break;
+                }
+                default:
+                    break;
+            }
+            canvas.onmousemove = function (ev) {
+                gameGrid.gridBox.color=gameGrid.GREEN;
+                var x=ev.clientX;
+                var y=ev.clientY;
+                var rect=ev.target.getBoundingClientRect();
+                x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
+                y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
+                playArea.mousePosition=[x,y];
+                switch (game.state){
+                    case 1: {
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                        if(gameGrid.compatibleBoxs(triangle,1)){
+                            gameGridBox.color=gameGrid.GREEN;
+                            clickEventIsOk=true;
+                        }
+                        else{
+                            console.log(gameGrid.gridBoxs);
+                            gameGridBox.color=gameGrid.RED;
+                            clickEventIsOk=false;
+                        }
+                        break;
+                    }
+                    case 2: {
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                        if(gameGrid.compatibleBoxs(circle,1)){
+                            gameGridBox.color=gameGrid.GREEN;
+                            clickEventIsOk=true;
+                        }
+                        else{
+                            gameGridBox.color=gameGrid.RED;
+                            clickEventIsOk=false;
+                        }
+                        break;
+                    }
+                    case 3: {
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                        if(gameGrid.compatibleBoxs(ball,1)){
+                            gameGridBox.color=gameGrid.GREEN;
+                            clickEventIsOk=true;
+                        }
+                        else{
+                            gameGridBox.color=gameGrid.RED;
+                            clickEventIsOk=false;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            };
+            canvas.onmousedown = function (ev) {
+                switch (game.state){
+                    case 1:{
+                        if(clickEventIsOk){
+                            triangle.fixFlag=true;
+                            clickEventIsOk=false;
+                            game.state=0;
+                            gameGrid.fillGridBoxs(triangle,1);
+                            canvas.onmousedown = null;
+                        }
+                        break;
+                    }
+                    case 2:{
+                        if(clickEventIsOk){
+                            circle.fixFlag=true;
+                            clickEventIsOk=false;
+                            game.state=0;
+                            gameGrid.fillGridBoxs(circle,1);
+                            canvas.onmousedown = null;
+                        }
+                        break;
+                    }
+                    case 3:{
+                        if(clickEventIsOk){
+                            ball.fixFlag=true;
+                            clickEventIsOk=false;
+                            game.state=0;
+                            gameGrid.fillGridBoxs(ball,1);
+                            canvas.onmousedown = null;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            };
+            canvas.onmouseout = function (ev) {
+                clearInterval(drawAllHandler);
+                gameGrid.gridBox.color=gameGrid.WHITE;
+                if(game.state===1)
+                    playArea.playAreaComponents.pop();
+                if(game.state===2)
+                    playArea.playAreaComponents.pop();
+                if(game.state===3)
+                    playArea.playAreaComponents.pop();
+                playArea.drawAll();
+                canvas.onmousemove=null;
+            };
         }
-        canvas.onmousemove = function (ev) {
-            gameGrid.gridBox.color=gameGrid.GREEN;
-            var x=ev.clientX;
-            var y=ev.clientY;
-            var rect=ev.target.getBoundingClientRect();
-            x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
-            y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
-            playArea.mousePosition=[x,y];
-            switch (game.state){
-                case 1: {
-                    playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
-                    if(gameGrid.compatibleBoxs(triangle,1)){
-                        gameGridBox.color=gameGrid.GREEN;
-                        clickEventIsOk=true;
-                    }
-                    else{
-                        gameGridBox.color=gameGrid.RED;
-                        clickEventIsOk=false;
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
-        };
-        canvas.onmousedown = function (ev) {
-            switch (game.state){
-                case 1:{
-                    if(clickEventIsOk){
-                        triangle.fixFlag=true;
-                        clickEventIsOk=false;
-                        game.state=0;
-                        gameGrid.fillGridBoxs(triangle,1);
-                        canvas.onmousedown = null;
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
-
-        };
-        canvas.onmouseout = function (ev) {
-            clearInterval(drawAllHandler);
-            gameGrid.gridBox.color=gameGrid.WHITE;
-            if(game.state===1)
-                playArea.playAreaComponents.pop();
-            playArea.drawAll();
-            canvas.onmousemove=null;
-        };
     };
     //点击新建三角形
     document.getElementById("tool-item1").addEventListener("click",function () {
-        if(game.state!==1)
+        if(game.state!==1){
             game.state=1;
+        }
+    });
+    //点击新建圆
+    document.getElementById("tool-item2").addEventListener("click",function () {
+        if(game.state!==2){
+            game.state=2;
+        }
+    });
+    //点击新建球
+    document.getElementById("tool-item3").addEventListener("click",function () {
+        if(game.state!==3){
+            game.state=3;
+        }
+    });
+    //运行
+    document.getElementById("run").addEventListener("click",function () {
+        game.modes=1;
+        runAllHandler=setInterval(function () {
+            playArea.physicsAll(physicsEngine);
+            playArea.drawAll();
+        },20);
+    });
+    //停止
+    document.getElementById("stop").addEventListener("click",function () {
+        game.modes=0;
+        if(runAllHandler)
+            clearInterval(runAllHandler);
     });
 }
