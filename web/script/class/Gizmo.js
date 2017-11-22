@@ -24,11 +24,11 @@ Gizmo=(function () {
         this.size=1;
         this.scaleSize=50;
         this.fixFlag=false;
-        this.speed=[0.5,0.0];
+        this.speed=[0.0,0.0];//[0.5,0.0]
         this.acceleration=[0.0,-1.0];
         this.extraAcce=[0.0,0.0];
         this.physicsAttr=true;
-        this.minSpeed=0.3;
+        this.minSpeed=0.2;
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -288,6 +288,8 @@ Gizmo=(function () {
         this.physicsAttr=false;
         this.minSpeed=0.2;
         this.extraAcce=[0.0,0.0];//暂时地给组件加速度
+        this.collisionObject="";
+        this.nextCollisionTheta=[];
 
         this.GREEN=[0.0,1.0,0.0,1.0];
         this.RED=[1.0,0.0,0.0,1.0];
@@ -389,17 +391,29 @@ Gizmo=(function () {
         };
         this.physicsAll=function (physicsEngine){
             for(var playAreaComponent in this.playAreaComponents){
+                //更新下一次的状态
                 if(this.playAreaComponents[playAreaComponent].physicsAttr){
                     if(this.playAreaComponents[playAreaComponent] instanceof Ball){
+                        var currentBall=physicsEngine.nextState(this.playAreaComponents[playAreaComponent]);
                         for(var physicsComponent in this.playAreaComponents){
                             if(physicsComponent!==playAreaComponent&&this.playAreaComponents[physicsComponent].physicsAttr){
-                                physicsEngine.componentCollisionCheck(this.playAreaComponents[playAreaComponent],this.playAreaComponents[physicsComponent]);
+                                this.playAreaComponents[playAreaComponent].nextCollisionTheta=physicsEngine.componentCollisionCheck(this.playAreaComponents[playAreaComponent],currentBall,this.playAreaComponents[physicsComponent]);
+                            }
+                            if(this.playAreaComponents[playAreaComponent].nextCollisionTheta&&this.playAreaComponents[playAreaComponent].nextCollisionTheta.length>=1){
+                                break;
                             }
                         }
-                        physicsEngine.edgeCollision(this.playAreaComponents[playAreaComponent]);
                     }
                 }
-                physicsEngine.nextState(this.playAreaComponents[playAreaComponent]);
+                if(this.playAreaComponents[playAreaComponent].nextCollisionTheta&&this.playAreaComponents[playAreaComponent].nextCollisionTheta.length>=1){
+                    console.log(this.playAreaComponents[playAreaComponent]);
+                }
+                //判断当前是否和边界碰撞
+                physicsEngine.edgeCollision(this.playAreaComponents[playAreaComponent]);
+                if(this.playAreaComponents[playAreaComponent].nextCollisionTheta&&this.playAreaComponents[playAreaComponent].nextCollisionTheta.length>=1){
+                    console.log(this.playAreaComponents[playAreaComponent]);
+                }
+                physicsEngine.enterNextState(this.playAreaComponents[playAreaComponent]);
             }
         };
         this.init=function () {
@@ -425,8 +439,6 @@ Gizmo=(function () {
         this.playArea.createPlayArea();
         this.playArea.init();
     };
-
-
 
     this.Vector=function (startX,startY,stopX,stopY) {
         this.startX=startX;
@@ -456,12 +468,70 @@ Gizmo=(function () {
             var basicFormVector=this.basicForm();
             return [basicFormVector[0]/this.distBetween(0,0,basicFormVector[0],basicFormVector[1]),basicFormVector[1]/this.distBetween(0,0,basicFormVector[0],basicFormVector[1])];
         }
+        this.isCrossLine=function (startX,startY,stopX,stopY) {
+            if ( Math.max(this.startX, this.stopX)<Math.min(startX,stopX) )
+            {
+                return false;
+            }
+            if ( Math.max(this.startY, this.stopY)<Math.min(startY, stopY) )
+            {
+                return false;
+            }
+            if ( Math.max(startX, stopX)<Math.min(this.startX,this.stopX) )
+            {
+                return false;
+            }
+            if ( Math.max(startY, stopY)<Math.min(this.startY, this.stopY) )
+            {
+                return false;
+            }
+            if ( this.mult([startX,startY], [this.stopX,this.stopY], [this.startX,this.startY])*this.mult([this.stopX,this.stopY], [stopX,stopY], [this.startX,this.startY])<0 )
+            {
+                return false;
+            }
+            if( this.mult([this.startX,this.startY], [stopX,stopY], [startX,startY])*this.mult([stopX,stopY], [this.stopX,this.stopY], [startX,startY])<0 )
+            {
+                return false;
+            }
+            return true;
+        };
+        this.mult=function(a,b,c) {
+            return (a[0]-c[0])*(b[1]-c[1])-(b[0]-c[0])*(a[1]-c[1]);
+        }//叉积
     };
     
     this.PhysicsEngine=function () {
         this.intervalTime=0.02;
         this.gravity=1.0;
         this.nextState=function (component) {
+            var acceX=component.acceleration[0]+component.extraAcce[0];
+            var acceY=component.acceleration[1]+component.extraAcce[1];
+            var oldSpeedX=component.speed[0];
+            var oldSpeedY=component.speed[1];
+            var newSpeedX=oldSpeedX+acceX*this.intervalTime;
+            var newSpeedY=oldSpeedY+acceY*this.intervalTime;
+            if(Math.abs(newSpeedX)<0.01){
+                newSpeedX=0;
+            }
+            if(Math.abs(newSpeedY)<0.01){
+                newSpeedY=0;
+            }
+            var distX=(oldSpeedX+newSpeedX)*this.intervalTime/2;
+            var distY=(oldSpeedY+newSpeedY)*this.intervalTime/2;
+            return {
+                center:[(component.center[0]+distX),(component.center[1]+distY)],
+                size:component.size,
+                scaleSize:component.scaleSize
+            };
+        };
+        this.enterNextState=function (component) {
+            if(component.nextCollisionTheta!=null&&component.nextCollisionTheta.length===2){
+                var tempX=2*component.speed[1]*component.nextCollisionTheta[0]*component.nextCollisionTheta[1]+component.speed[0]*(component.nextCollisionTheta[1]*component.nextCollisionTheta[1]-component.nextCollisionTheta[0]*component.nextCollisionTheta[0]);
+                var tempY=2*component.speed[0]*component.nextCollisionTheta[0]*component.nextCollisionTheta[1]+component.speed[1]*(component.nextCollisionTheta[0]*component.nextCollisionTheta[0]-component.nextCollisionTheta[1]*component.nextCollisionTheta[1]);
+                component.speed[0]=tempX*0.95;
+                component.speed[1]=tempY*0.95;
+                component.nextCollisionTheta=[];
+            }
             var acceX=component.acceleration[0]+component.extraAcce[0];
             var acceY=component.acceleration[1]+component.extraAcce[1];
             var oldSpeedX=component.speed[0];
@@ -512,8 +582,10 @@ Gizmo=(function () {
                 component.speed[1]=component.speed[1]*0.8;
             }
         };
-        this.componentCollisionCheck=function (ball,component){
+        this.componentCollisionCheck=function (oldBall,ball,component){
             var vector=new Vector(ball.center[0],ball.center[1],component.center[0],component.center[1]);
+            var noCollision=true;
+            var resultTheta=null;
             for(var i=0;i<component.verticesArray.length;i=i+2){
                 var centerX=ball.center[0];
                 var centerY=ball.center[1];
@@ -528,24 +600,72 @@ Gizmo=(function () {
                     var vertex2Y=component.verticesArray[i+3];
                 }
                 var heightCrossVertex=vector.heightCross(centerX,centerY,vertex1X,vertex1Y,vertex2X,vertex2Y);
+                //判断在不进入游戏组建的时刻会不会发生碰撞
                 if((heightCrossVertex[0]<=Math.max(vertex1X,vertex2X))&&(heightCrossVertex[0]>=Math.min(vertex1X,vertex2X))&&(heightCrossVertex[1]<=Math.max(vertex1Y,vertex2Y))&&(heightCrossVertex[1]>=Math.min(vertex1Y,vertex2Y))){
                     var dist=vector.distBetween(heightCrossVertex[0],heightCrossVertex[1],ball.center[0],ball.center[1]);
                     if(dist<ball.size*0.1*ball.scaleSize/200){
+                        noCollision=false;
+                        if(oldBall.collisionObject===component.id){
+                            oldBall.collisionObject="";
+                            resultTheta=[];
+                            break;
+                        }
+                        else{
+                            ball.collisionObject=component.id;
+                            if(vertex2X>=vertex1X){
+                                var vectorSlop=new Vector(vertex1X,vertex1Y,vertex2X,vertex2Y);
+                            }
+                            else{
+                                var vectorSlop=new Vector(vertex2X,vertex2Y,vertex1X,vertex1Y);
+                            }
+                            resultTheta=vectorSlop.XDirtAngle();
+                        }
+                    }
+                }
+                var vertexVertor=new Vector();
+                if(vertexVertor.distBetween(ball.center[0],ball.center[1],vertex1X,vertex1Y)-ball.size*0.1*ball.scaleSize/200<0.001){
+                    if(oldBall.collisionObject===component.id){
+                        oldBall.collisionObject="";
+                        resultTheta=[];
+                        break;
+                    }
+                    else{
+                        if(component.center[0]<=vertex1X){
+                            var vectorVertical=new Vector(component.center[0],component.center[1],vertex1X,vertex1Y);
+                        }
+                        else{
+                            var vectorVertical=new Vector(component.center[0],component.center[1],vertex1X,vertex1Y);
+                        }
+                        var tempX=-vectorVertical.basicForm()[1];
+                        var tempY=vectorVertical.basicForm()[0];
+                        var vectorSlop=new Vector(0.0,0.0,tempX,tempY);
+                        return vectorSlop.XDirtAngle();
+                    }
+                }
+                //判断下一个时刻会不会进入游戏组件里面
+                var oldNewCenter=new Vector(oldBall.center[0],oldBall.center[1],ball.center[0],ball.center[1]);
+                if(oldNewCenter.isCrossLine(vertex1X,vertex1Y,vertex2X,vertex2Y)){
+                    if(oldBall.collisionObject===component.id){
+                        oldBall.collisionObject="";
+                        resultTheta=[];
+                        break;
+                    }
+                    else{
                         if(vertex2X>=vertex1X){
                             var vectorSlop=new Vector(vertex1X,vertex1Y,vertex2X,vertex2Y);
                         }
                         else{
                             var vectorSlop=new Vector(vertex2X,vertex2Y,vertex1X,vertex1Y);
                         }
-                        var theta=vectorSlop.XDirtAngle();
-                        var tempX=2*ball.speed[1]*theta[0]*theta[1]+ball.speed[0]*(theta[1]*theta[1]-theta[0]*theta[0]);
-                        var tempY=2*ball.speed[0]*theta[0]*theta[1]+ball.speed[1]*(theta[0]*theta[0]-theta[1]*theta[1]);
-                        ball.speed[0]=tempX;
-                        ball.speed[1]=tempY;
+                        return vectorSlop.XDirtAngle();
                     }
                 }
             }
-        }
+            if(noCollision){
+                oldBall.collisionObject="";
+            }
+            return resultTheta;
+        };
     };
 
     return{
