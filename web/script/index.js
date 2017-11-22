@@ -70,8 +70,6 @@ function main2() {
     var gameGridBox=gameGrid.gridBox;
     var canvas=document.getElementById("playArea");
     var physicsEngine=new Gizmo.PhysicsEngine();
-    var vect1=new Gizmo.Vector();
-    console.log(vect1.heightCross(1.0,0.0,0.0,0.0,-1.0,1.0));
 
 
     //点击新建事件

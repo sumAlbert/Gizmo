@@ -24,8 +24,9 @@ Gizmo=(function () {
         this.size=1;
         this.scaleSize=50;
         this.fixFlag=false;
-        this.speed=[0.5,0.5];
+        this.speed=[0.0,0.0];
         this.acceleration=[0.0,-1.0];
+        this.extraAcce=[0.0,0.0];
         this.physicsAttr=true;
         this.minSpeed=0.2;
         this.update=function (mousePosition) {
@@ -66,7 +67,7 @@ Gizmo=(function () {
         this.id="Circle"+this.randomPostfix();
         this.size=1;
         this.fixFlag=false;
-        this.physicsAttr=false;
+        this.physicsAttr=true;
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -286,6 +287,7 @@ Gizmo=(function () {
         this.fixFlag=false;
         this.physicsAttr=false;
         this.minSpeed=0.2;
+        this.extraAcce=[0.0,0.0];//暂时地给组件加速度
 
         this.GREEN=[0.0,1.0,0.0,1.0];
         this.RED=[1.0,0.0,0.0,1.0];
@@ -388,14 +390,17 @@ Gizmo=(function () {
         this.physicsAll=function (physicsEngine){
             for(var playAreaComponent in this.playAreaComponents){
                 if(this.playAreaComponents[playAreaComponent].physicsAttr){
-                    physicsEngine.edgeCollision(this.playAreaComponents[playAreaComponent]);
                     if(this.playAreaComponents[playAreaComponent] instanceof Ball){
                         for(var physicsComponent in this.playAreaComponents){
-                            //TODO check physicsComponent
+                            if(physicsComponent!==playAreaComponent&&this.playAreaComponents[physicsComponent].physicsAttr){
+                                physicsEngine.componentCollisionCheck(this.playAreaComponents[playAreaComponent],this.playAreaComponents[physicsComponent]);
+                            }
                         }
                     }
+                    physicsEngine.edgeCollision(this.playAreaComponents[playAreaComponent]);
                 }
                 physicsEngine.nextState(this.playAreaComponents[playAreaComponent]);
+
             }
         };
         this.init=function () {
@@ -434,7 +439,7 @@ Gizmo=(function () {
             var vect1=this.basicForm();
             var vect2=vector.basicForm();
             return (vect1[0]*vect2[0]+vect1[1]*vect2[1])/Math.sqrt(Math.pow(vect1[0],2)+Math.pow(vect1[1],2));
-        }
+        };
         this.heightCross=function (centerX,centerY,vertex1X,vertex1Y,vertex2X,vertex2Y) {
             var A=vertex2Y-vertex1Y;
             var B=vertex1X-vertex2X;
@@ -442,9 +447,13 @@ Gizmo=(function () {
             var resultX=centerX-2*A*((A*centerX+B*centerY+C)/(A*A+B*B));
             var resultY=centerY-2*B*((A*centerX+B*centerY+C)/(A*A+B*B));
             return [resultX,resultY];
-        }
+        };
         this.distBetween=function (vertex1X,vertex1Y,vertex2X,vertex2Y) {
-            return Math.sqrt((vertex2X-vertex1X)*(vertex2X-vertex1X)-(vertex2Y-vertex1Y)*(vertex2Y-vertex1Y))
+            return Math.sqrt((vertex2X-0-vertex1X)*(vertex2X-0-vertex1X)+(vertex2Y-0-vertex1Y)*(vertex2Y-0-vertex1Y))
+        };
+        this.XDirtAngle=function () {
+            var basicFormVector=this.basicForm();
+            return [basicFormVector[0]/this.distBetween(0,0,basicFormVector[0],basicFormVector[1]),basicFormVector[1]/this.distBetween(0,0,basicFormVector[0],basicFormVector[1])];
         }
     };
     
@@ -452,8 +461,8 @@ Gizmo=(function () {
         this.intervalTime=0.02;
         this.gravity=1.0;
         this.nextState=function (component) {
-            var acceX=component.acceleration[0];
-            var acceY=component.acceleration[1];
+            var acceX=component.acceleration[0]+component.extraAcce[0];
+            var acceY=component.acceleration[1]+component.extraAcce[1];
             var oldSpeedX=component.speed[0];
             var oldSpeedY=component.speed[1];
             var newSpeedX=oldSpeedX+acceX*this.intervalTime;
@@ -470,13 +479,15 @@ Gizmo=(function () {
             component.speed[1]=newSpeedY;
             component.center[0]=component.center[0]+distX;
             component.center[1]=component.center[1]+distY;
+            component.extraAcce[0]=0.0;
+            component.extraAcce[1]=0.0;
             component.vertexsByCenter();
         };
         this.edgeCollision=function (component) {
             if(component.center[0]-(component.size*0.1*component.scaleSize/200-1.0)<0.00001&&component.speed[0]<0){
                 if(Math.abs(component.speed[0])-component.minSpeed<=0.001) {
                     component.speed[0]=0.0;
-                    component.acceleration[0] = 0.0;
+                    component.extraAcce[1]=1.0;
                 }
                 component.speed[0]=-component.speed[0];
                 component.speed[0]=component.speed[0]*0.8;
@@ -484,7 +495,7 @@ Gizmo=(function () {
             else if(component.center[1]-(component.size*0.1*component.scaleSize/200-1.0)<0.00001&&component.speed[1]<0){//底边
                 if(Math.abs(component.speed[1])-component.minSpeed<=0.001) {
                     component.speed[1]=0.0;
-                    component.acceleration[1] = 0.0;
+                    component.extraAcce[1]=1.0;
                 }
                 component.speed[1]=-component.speed[1];
                 component.speed[1]=component.speed[1]*0.8;
@@ -493,7 +504,7 @@ Gizmo=(function () {
                 if(Math.abs(component.speed[0])-component.minSpeed<=0.001) {
                     console.log(component);
                     component.speed[0]=0.0;
-                    component.acceleration[0] = 0.0;
+                    component.extraAcce[1]=1.0;
                 }
                 component.speed[0]=-component.speed[0];
                 component.speed[0]=component.speed[0]*0.8;
@@ -501,25 +512,39 @@ Gizmo=(function () {
                 component.speed[1]=-component.speed[1];
                 component.speed[1]=component.speed[1]*0.8;
             }
-        }
-        this.componentCollisionCheck=function (ball,component) {
-            var vector=new Vector(ball.center[0],ball.center[1],component.center[0].component.center[1]);
-            for(var i=0;i<component.verticesArray.size();i++){
-                var centerX=component.center[0];
-                var centerY=component.center[1];
+        };
+        this.componentCollisionCheck=function (ball,component){
+            var vector=new Vector(ball.center[0],ball.center[1],component.center[0],component.center[1]);
+            for(var i=0;i<component.verticesArray.length;i=i+2){
+                var centerX=ball.center[0];
+                var centerY=ball.center[1];
                 var vertex1X=component.verticesArray[i];
                 var vertex1Y=component.verticesArray[i+1];
-                if(i+2>=component.verticesArray.size()){
+                if(i+2>=component.verticesArray.length){
                     var vertex2X=component.verticesArray[0];
                     var vertex2Y=component.verticesArray[1];
                 }
                 else{
-                    var vertex2X=component.verticesArray[i+1];
-                    var vertex2Y=component.verticesArray[i+2];
+                    var vertex2X=component.verticesArray[i+2];
+                    var vertex2Y=component.verticesArray[i+3];
                 }
                 var heightCrossVertex=vector.heightCross(centerX,centerY,vertex1X,vertex1Y,vertex2X,vertex2Y);
-                if(heightCrossVertex[0]<=Math.max(vertex1X,vertex2X)&&heightCrossVertex[0]>=Math.min(vertex1X,vertex2X)&&heightCrossVertex[1]<=Math.max(vertex1Y,vertex2Y)&&heightCrossVertex[1]>=Math.max(vertex1Y,vertex2Y)){
-                    console.log("collision");
+                if((heightCrossVertex[0]<=Math.max(vertex1X,vertex2X))&&(heightCrossVertex[0]>=Math.min(vertex1X,vertex2X))&&(heightCrossVertex[1]<=Math.max(vertex1Y,vertex2Y))&&(heightCrossVertex[1]>=Math.min(vertex1Y,vertex2Y))){
+                    var dist=vector.distBetween(heightCrossVertex[0],heightCrossVertex[1],ball.center[0],ball.center[1]);
+                    if(dist<ball.size*0.1*ball.scaleSize/200){
+                        console.log("collision");
+                        if(vertex2X>=vertex1X){
+                            var vectorSlop=new Vector(vertex1X,vertex1Y,vertex2X,vertex2Y);
+                        }
+                        else{
+                            var vectorSlop=new Vector(vertex2X,vertex2Y,vertex1X,vertex1Y);
+                        }
+                        var theta=vectorSlop.XDirtAngle();
+                        var tempX=2*ball.speed[1]*theta[0]*theta[1]+ball.speed[0]*(theta[1]*theta[1]-theta[0]*theta[0]);
+                        var tempY=2*ball.speed[0]*theta[0]*theta[1]+ball.speed[1]*(theta[0]*theta[0]-theta[1]*theta[1]);
+                        ball.speed[0]=tempX*0.9;
+                        ball.speed[1]=tempY*0.9;
+                    }
                 }
             }
         }
