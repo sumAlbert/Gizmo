@@ -24,8 +24,10 @@ Gizmo=(function () {
         this.size=1;
         this.scaleSize=50;
         this.fixFlag=false;
-        this.speed=[0.5,1.0];
+        this.speed=[0.5,0.5];
         this.acceleration=[0.0,-1.0];
+        this.physicsAttr=true;
+        this.minSpeed=0.2;
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -64,6 +66,7 @@ Gizmo=(function () {
         this.id="Circle"+this.randomPostfix();
         this.size=1;
         this.fixFlag=false;
+        this.physicsAttr=false;
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -92,6 +95,7 @@ Gizmo=(function () {
         this.id="Triangle"+this.randomPostfix();
         this.size=0;
         this.fixFlag=false;
+        this.physicsAttr=true;
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -183,7 +187,6 @@ Gizmo=(function () {
                 default: {
                     var centerX=Math.floor(10*(component.center[0]+0.01))+10;
                     var centerY=Math.floor(10*(component.center[1]+0.01))+10;
-                    console.log(component.center);
                     if(component.size%2===0){
                         var leftBottomX=centerX-component.size/2;
                         var leftBottomY=centerY-component.size/2;
@@ -212,7 +215,6 @@ Gizmo=(function () {
                 default: {
                     var centerX=Math.floor(10*(component.center[0]+0.01))+10;
                     var centerY=Math.floor(10*(component.center[1]+0.01))+10;
-                    console.log(this.gridBoxs);
                     if(component.size%2===0){
                         var leftBottomX=centerX-component.size/2;
                         var leftBottomY=centerY-component.size/2;
@@ -282,6 +284,8 @@ Gizmo=(function () {
         this.verticesArray=[];//边界点
         this.size=1;
         this.fixFlag=false;
+        this.physicsAttr=false;
+        this.minSpeed=0.2;
 
         this.GREEN=[0.0,1.0,0.0,1.0];
         this.RED=[1.0,0.0,0.0,1.0];
@@ -383,7 +387,14 @@ Gizmo=(function () {
         };
         this.physicsAll=function (physicsEngine){
             for(var playAreaComponent in this.playAreaComponents){
-                physicsEngine.edgeCollision(this.playAreaComponents[playAreaComponent]);
+                if(this.playAreaComponents[playAreaComponent].physicsAttr){
+                    physicsEngine.edgeCollision(this.playAreaComponents[playAreaComponent]);
+                    if(this.playAreaComponents[playAreaComponent] instanceof Ball){
+                        for(var physicsComponent in this.playAreaComponents){
+                            //TODO check physicsComponent
+                        }
+                    }
+                }
                 physicsEngine.nextState(this.playAreaComponents[playAreaComponent]);
             }
         };
@@ -447,10 +458,10 @@ Gizmo=(function () {
             var oldSpeedY=component.speed[1];
             var newSpeedX=oldSpeedX+acceX*this.intervalTime;
             var newSpeedY=oldSpeedY+acceY*this.intervalTime;
-            if(Math.abs(newSpeedX)<0.00001){
+            if(Math.abs(newSpeedX)<0.01){
                 newSpeedX=0;
             }
-            if(Math.abs(newSpeedY)<0.00001){
+            if(Math.abs(newSpeedY)<0.01){
                 newSpeedY=0;
             }
             var distX=(oldSpeedX+newSpeedX)*this.intervalTime/2;
@@ -462,26 +473,54 @@ Gizmo=(function () {
             component.vertexsByCenter();
         };
         this.edgeCollision=function (component) {
-            console.log(component.center[0]);
-            console.log(component.center[1]);
-            if(component.center[0]<component.size*0.1*component.scaleSize/200-1.0){
-                console.log("1");
+            if(component.center[0]-(component.size*0.1*component.scaleSize/200-1.0)<0.00001&&component.speed[0]<0){
+                if(Math.abs(component.speed[0])-component.minSpeed<=0.001) {
+                    component.speed[0]=0.0;
+                    component.acceleration[0] = 0.0;
+                }
                 component.speed[0]=-component.speed[0];
-                component.speed[0]=component.speed[0]*0.99;
+                component.speed[0]=component.speed[0]*0.8;
             }
-            else if(component.center[1]<component.size*0.1*component.scaleSize/200-1.0){
-                console.log("2");
+            else if(component.center[1]-(component.size*0.1*component.scaleSize/200-1.0)<0.00001&&component.speed[1]<0){//底边
+                if(Math.abs(component.speed[1])-component.minSpeed<=0.001) {
+                    component.speed[1]=0.0;
+                    component.acceleration[1] = 0.0;
+                }
                 component.speed[1]=-component.speed[1];
-                component.speed[1]=component.speed[1]*0.99;
+                component.speed[1]=component.speed[1]*0.8;
             }
-            else if(component.center[0]>1.0-component.size*0.1*component.scaleSize/200){
-                console.log("3");
+            else if(0.00001>1.0-component.size*0.1*component.scaleSize/200-component.center[0]&&component.speed[0]>0){
+                if(Math.abs(component.speed[0])-component.minSpeed<=0.001) {
+                    console.log(component);
+                    component.speed[0]=0.0;
+                    component.acceleration[0] = 0.0;
+                }
                 component.speed[0]=-component.speed[0];
-                component.speed[0]=component.speed[0]*0.99;
-            }else if(component.center[1]>1.0-component.size*0.1*component.scaleSize/200){
-                console.log("4");
+                component.speed[0]=component.speed[0]*0.8;
+            }else if(0.00001>1.0-component.size*0.1*component.scaleSize/200-component.center[1]&&component.speed[1]>0){
                 component.speed[1]=-component.speed[1];
-                component.speed[1]=component.speed[1]*0.99;
+                component.speed[1]=component.speed[1]*0.8;
+            }
+        }
+        this.componentCollisionCheck=function (ball,component) {
+            var vector=new Vector(ball.center[0],ball.center[1],component.center[0].component.center[1]);
+            for(var i=0;i<component.verticesArray.size();i++){
+                var centerX=component.center[0];
+                var centerY=component.center[1];
+                var vertex1X=component.verticesArray[i];
+                var vertex1Y=component.verticesArray[i+1];
+                if(i+2>=component.verticesArray.size()){
+                    var vertex2X=component.verticesArray[0];
+                    var vertex2Y=component.verticesArray[1];
+                }
+                else{
+                    var vertex2X=component.verticesArray[i+1];
+                    var vertex2Y=component.verticesArray[i+2];
+                }
+                var heightCrossVertex=vector.heightCross(centerX,centerY,vertex1X,vertex1Y,vertex2X,vertex2Y);
+                if(heightCrossVertex[0]<=Math.max(vertex1X,vertex2X)&&heightCrossVertex[0]>=Math.min(vertex1X,vertex2X)&&heightCrossVertex[1]<=Math.max(vertex1Y,vertex2Y)&&heightCrossVertex[1]>=Math.max(vertex1Y,vertex2Y)){
+                    console.log("collision");
+                }
             }
         }
     };
