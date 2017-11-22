@@ -24,11 +24,11 @@ Gizmo=(function () {
         this.size=1;
         this.scaleSize=50;
         this.fixFlag=false;
-        this.speed=[0.0,0.0];
+        this.speed=[0.5,0.0];
         this.acceleration=[0.0,-1.0];
         this.extraAcce=[0.0,0.0];
         this.physicsAttr=true;
-        this.minSpeed=0.2;
+        this.minSpeed=0.3;
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -396,11 +396,10 @@ Gizmo=(function () {
                                 physicsEngine.componentCollisionCheck(this.playAreaComponents[playAreaComponent],this.playAreaComponents[physicsComponent]);
                             }
                         }
+                        physicsEngine.edgeCollision(this.playAreaComponents[playAreaComponent]);
                     }
-                    physicsEngine.edgeCollision(this.playAreaComponents[playAreaComponent]);
                 }
                 physicsEngine.nextState(this.playAreaComponents[playAreaComponent]);
-
             }
         };
         this.init=function () {
@@ -479,20 +478,19 @@ Gizmo=(function () {
             component.speed[1]=newSpeedY;
             component.center[0]=component.center[0]+distX;
             component.center[1]=component.center[1]+distY;
+            component.vertexsByCenter();
             component.extraAcce[0]=0.0;
             component.extraAcce[1]=0.0;
-            component.vertexsByCenter();
         };
         this.edgeCollision=function (component) {
             if(component.center[0]-(component.size*0.1*component.scaleSize/200-1.0)<0.00001&&component.speed[0]<0){
                 if(Math.abs(component.speed[0])-component.minSpeed<=0.001) {
                     component.speed[0]=0.0;
-                    component.extraAcce[1]=1.0;
                 }
                 component.speed[0]=-component.speed[0];
                 component.speed[0]=component.speed[0]*0.8;
             }
-            else if(component.center[1]-(component.size*0.1*component.scaleSize/200-1.0)<0.00001&&component.speed[1]<0){//底边
+            if(component.center[1]-(component.size*0.1*component.scaleSize/200-1.0)<0.00001&&component.speed[1]<=0){//底边
                 if(Math.abs(component.speed[1])-component.minSpeed<=0.001) {
                     component.speed[1]=0.0;
                     component.extraAcce[1]=1.0;
@@ -500,15 +498,14 @@ Gizmo=(function () {
                 component.speed[1]=-component.speed[1];
                 component.speed[1]=component.speed[1]*0.8;
             }
-            else if(0.00001>1.0-component.size*0.1*component.scaleSize/200-component.center[0]&&component.speed[0]>0){
+            if(0.00001>1.0-component.size*0.1*component.scaleSize/200-component.center[0]&&component.speed[0]>0){
                 if(Math.abs(component.speed[0])-component.minSpeed<=0.001) {
-                    console.log(component);
                     component.speed[0]=0.0;
-                    component.extraAcce[1]=1.0;
                 }
                 component.speed[0]=-component.speed[0];
                 component.speed[0]=component.speed[0]*0.8;
-            }else if(0.00001>1.0-component.size*0.1*component.scaleSize/200-component.center[1]&&component.speed[1]>0){
+            }
+            if(0.00001>1.0-component.size*0.1*component.scaleSize/200-component.center[1]&&component.speed[1]>0){
                 component.speed[1]=-component.speed[1];
                 component.speed[1]=component.speed[1]*0.8;
             }
@@ -532,7 +529,6 @@ Gizmo=(function () {
                 if((heightCrossVertex[0]<=Math.max(vertex1X,vertex2X))&&(heightCrossVertex[0]>=Math.min(vertex1X,vertex2X))&&(heightCrossVertex[1]<=Math.max(vertex1Y,vertex2Y))&&(heightCrossVertex[1]>=Math.min(vertex1Y,vertex2Y))){
                     var dist=vector.distBetween(heightCrossVertex[0],heightCrossVertex[1],ball.center[0],ball.center[1]);
                     if(dist<ball.size*0.1*ball.scaleSize/200){
-                        console.log("collision");
                         if(vertex2X>=vertex1X){
                             var vectorSlop=new Vector(vertex1X,vertex1Y,vertex2X,vertex2Y);
                         }
@@ -542,8 +538,8 @@ Gizmo=(function () {
                         var theta=vectorSlop.XDirtAngle();
                         var tempX=2*ball.speed[1]*theta[0]*theta[1]+ball.speed[0]*(theta[1]*theta[1]-theta[0]*theta[0]);
                         var tempY=2*ball.speed[0]*theta[0]*theta[1]+ball.speed[1]*(theta[0]*theta[0]-theta[1]*theta[1]);
-                        ball.speed[0]=tempX*0.9;
-                        ball.speed[1]=tempY*0.9;
+                        ball.speed[0]=tempX;
+                        ball.speed[1]=tempY;
                     }
                 }
             }
