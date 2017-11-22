@@ -426,6 +426,8 @@ Gizmo=(function () {
         this.playArea.init();
     };
 
+
+
     this.Vector=function (startX,startY,stopX,stopY) {
         this.startX=startX;
         this.startY=startY;

@@ -64,6 +64,7 @@ function main() {
 }
 
 function main2() {
+
     var game=new Gizmo.Game();
     var playArea=game.playArea;
     var gameGrid=playArea.gameGrid;

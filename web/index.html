@@ -38,6 +38,26 @@
 <script src="./script/cuon-utils.js"></script>
 <script src="./script/webgl-debug.js"></script>
 <script src="./script/webgl-utils.js"></script>
+<script src="./script/jquery-3.2.1.min.js"></script>
 <script src="script/class/Gizmo.js"></script>
 <script src="script/index.js"></script>
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            type: 'post',
+            url: 'Index',
+            data:{
+                command:"command",
+                userId:"userId",
+                sceneId:"sceneId"
+            },
+            success: function (data) {
+                console.log(data);
+            },
+            error: function () {
+                console.log("error")
+            }
+        })
+    });
+</script>
 </html>
