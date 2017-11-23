@@ -660,7 +660,7 @@ Gizmo=(function () {
 
                     }
                 }
-                if(!component instanceof Ball){
+                if(!(component instanceof Circle)){
                     //判断物体各个顶点是否发生碰撞，优先级别高于边碰撞（因为小球运动轨迹很可能是抛物线）
                     var vertexVertor=new Vector();
                     if(vertexVertor.distBetween(ball.center[0],ball.center[1],vertex1X,vertex1Y)-ball.size*0.1*ball.scaleSize/200<0.001){
