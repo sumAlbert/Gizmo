@@ -392,26 +392,23 @@ Gizmo=(function () {
         this.physicsAll=function (physicsEngine){
             for(var playAreaComponent in this.playAreaComponents){
                 //更新下一次的状态
+                var collisionDocu={num:0,theta:[],objectId:''};
                 if(this.playAreaComponents[playAreaComponent].physicsAttr){
                     //如果是球才更新下一秒的状态
                     if(this.playAreaComponents[playAreaComponent] instanceof Ball){
                         //获取下一秒的状态，并且暂时保存
                         var currentBall=physicsEngine.nextState(this.playAreaComponents[playAreaComponent]);
                         for(var physicsComponent in this.playAreaComponents){
-                            //设置下一秒的碰撞角度
+                            //设置下一秒的碰撞状态
                             if(physicsComponent!==playAreaComponent&&this.playAreaComponents[physicsComponent].physicsAttr){
-                                this.playAreaComponents[playAreaComponent].nextCollisionTheta=physicsEngine.componentCollisionCheck(this.playAreaComponents[playAreaComponent],currentBall,this.playAreaComponents[physicsComponent]);
-                            }
-                            //检查到一个碰撞物，这一时间段不检测其他碰撞物
-                            if(this.playAreaComponents[playAreaComponent].nextCollisionTheta&&this.playAreaComponents[playAreaComponent].nextCollisionTheta.length>=1){
-                                break;
+                                physicsEngine.componentCollisionCheck(this.playAreaComponents[playAreaComponent],currentBall,this.playAreaComponents[physicsComponent],collisionDocu);
                             }
                         }
                     }
                 }
                 //判断当前是否和边界碰撞
-                physicsEngine.edgeCollision(this.playAreaComponents[playAreaComponent]);
-                physicsEngine.enterNextState(this.playAreaComponents[playAreaComponent]);
+                physicsEngine.edgeCollision(this.playAreaComponents[playAreaComponent],collisionDocu);
+                physicsEngine.enterNextState(this.playAreaComponents[playAreaComponent],collisionDocu);
             }
         };
         this.init=function () {
@@ -522,20 +519,21 @@ Gizmo=(function () {
                 scaleSize:component.scaleSize
             };
         };
-        this.enterNextState=function (component) {
-            if(component.nextCollisionTheta!=null&&component.nextCollisionTheta.length===2){
-                var tempX=2*component.speed[1]*component.nextCollisionTheta[0]*component.nextCollisionTheta[1]+component.speed[0]*(component.nextCollisionTheta[1]*component.nextCollisionTheta[1]-component.nextCollisionTheta[0]*component.nextCollisionTheta[0]);
-                var tempY=2*component.speed[0]*component.nextCollisionTheta[0]*component.nextCollisionTheta[1]+component.speed[1]*(component.nextCollisionTheta[0]*component.nextCollisionTheta[0]-component.nextCollisionTheta[1]*component.nextCollisionTheta[1]);
-                //判断是否停在物体上面
-                if(tempX<component.minSpeed&&tempY<component.minSpeed){
+        this.enterNextState=function (component,collisionDocu) {
+            //如果碰撞超过两个物体
+            if(collisionDocu.num>1){
+                if(Math.max(Math.abs(component.speed[1]),Math.abs(component.speed[0]))-component.minSpeed<=0.001) {
                     component.speed[0]=0.0;
                     component.speed[1]=0.0;
                     component.acceleration=[0.0,0.0];
                     component.extraAcce=[0.0,0.0];
                 }
+            }
+            if(collisionDocu.theta!=null&&collisionDocu.theta.length===2){
+                var tempX=2*component.speed[1]*collisionDocu.theta[0]*collisionDocu.theta[1]+component.speed[0]*(collisionDocu.theta[1]*collisionDocu.theta[1]-collisionDocu.theta[0]*collisionDocu.theta[0]);
+                var tempY=2*component.speed[0]*collisionDocu.theta[0]*collisionDocu.theta[1]+component.speed[1]*(collisionDocu.theta[0]*collisionDocu.theta[0]-collisionDocu.theta[1]*collisionDocu.theta[1]);
                 component.speed[0]=tempX*0.90;
                 component.speed[1]=tempY*0.90;
-                component.nextCollisionTheta=[];
             }
             var acceX=component.acceleration[0]+component.extraAcce[0];
             var acceY=component.acceleration[1]+component.extraAcce[1];
@@ -551,6 +549,7 @@ Gizmo=(function () {
             }
             var distX=(oldSpeedX+newSpeedX)*this.intervalTime/2;
             var distY=(oldSpeedY+newSpeedY)*this.intervalTime/2;
+
             //更新下一时刻的状态
             component.speed[0]=newSpeedX;
             component.speed[1]=newSpeedY;
@@ -563,23 +562,22 @@ Gizmo=(function () {
         /**
          * 边界控制
          * @param component 检测的物体
+         * @param collisionDocu 碰撞存储的信息
          */
-        this.edgeCollision=function (component) {
+        this.edgeCollision=function (component,collisionDocu) {
             if(component.speed[0]===0.0&&component.speed[1]===0.0&&component.acceleration[1]===0.0&&component.acceleration[0]===0.0){
                 return;
             }
             //与上边界碰撞
             if(component.center[0]-(component.size*0.1*component.scaleSize/200-1.0)<0.00001&&component.speed[0]<0){
-                if(Math.abs(component.speed[0])-component.minSpeed<=0.001) {
-                    component.speed[0]=0.0;
-                }
+                collisionDocu.num++;
                 component.speed[0]=-component.speed[0];
                 component.speed[0]=component.speed[0]*0.8;
             }
             //与下边界碰撞
             if(component.center[1]-(component.size*0.1*component.scaleSize/200-1.0)<0.00001&&component.speed[1]<=0){//底边
+                collisionDocu.num++;
                 if(Math.abs(component.speed[1])-component.minSpeed<=0.001) {
-                    component.speed[1]=0.0;
                     component.extraAcce[1]=1.0;
                 }
                 component.speed[1]=-component.speed[1];
@@ -587,14 +585,13 @@ Gizmo=(function () {
             }
             //与右边界碰撞
             if(0.00001>1.0-component.size*0.1*component.scaleSize/200-component.center[0]&&component.speed[0]>0){
-                if(Math.abs(component.speed[0])-component.minSpeed<=0.001) {
-                    component.speed[0]=0.0;
-                }
+                collisionDocu.num++;
                 component.speed[0]=-component.speed[0];
                 component.speed[0]=component.speed[0]*0.8;
             }
             //与左边界碰撞
             if(0.00001>1.0-component.size*0.1*component.scaleSize/200-component.center[1]&&component.speed[1]>0){
+                collisionDocu.num++;
                 component.speed[1]=-component.speed[1];
                 component.speed[1]=component.speed[1]*0.8;
             }
@@ -605,18 +602,20 @@ Gizmo=(function () {
          * @param oldBall 上一时刻的小球
          * @param ball 下一个时刻的小球
          * @param component 游戏组件
+         * @param collisionDocu 记录碰撞次数
          * @returns {*}
          * 需要设置小球碰撞的物体id(避免在相邻的两个时刻重复碰撞同一个物体)
          * 需要设置小球碰撞斜面的与X轴夹角的正余弦
          */
-        this.componentCollisionCheck=function (oldBall,ball,component){
+        this.componentCollisionCheck=function (oldBall,ball,component,collisionDocu){
+            //如果小球静止不做碰撞判断
             if(oldBall.speed[0]===0.0&&oldBall.speed[1]===0.0&&oldBall.acceleration[1]===0.0&&oldBall.acceleration[0]===0.0){
                 return [];
             }
+            var collisionNum=collisionDocu.num;
+            var collisionTheta=collisionDocu.theta;
             //碰撞检测
             var vector=new Vector(ball.center[0],ball.center[1],component.center[0],component.center[1]);
-            var noCollision=true;//本次是否发生碰撞
-            var resultTheta=null;//如果发生碰撞返回碰撞斜面与X正向的角的正弦函数和余弦函数
             //检测每一条边
             for(var i=0;i<component.verticesArray.length;i=i+2){
                 var centerX=ball.center[0];
@@ -639,69 +638,77 @@ Gizmo=(function () {
                     var dist=vector.distBetween(heightCrossVertex[0],heightCrossVertex[1],ball.center[0],ball.center[1]);
                     //小于小球的半径就发生碰撞
                     if(dist<ball.size*0.1*ball.scaleSize/200){
-                        noCollision=false;
+                        //如果是碰撞同一个物体，则不算发生了碰撞
                         if(oldBall.collisionObject===component.id){
-                            oldBall.collisionObject="";
-                            resultTheta=[];
+                            break;
+                        }
+                        //如果不是碰撞同一个物体，则算是发生了碰撞
+                        else{
+                            //碰撞次数为0，发生了实际碰撞，需要更新球的数据
+                            if(collisionNum===0){
+                                collisionDocu.objectId=component.id;
+                                if(vertex2X>=vertex1X){
+                                    var vectorSlop=new Vector(vertex1X,vertex1Y,vertex2X,vertex2Y);
+                                }
+                                else{
+                                    var vectorSlop=new Vector(vertex2X,vertex2Y,vertex1X,vertex1Y);
+                                }
+                                collisionDocu.theta=vectorSlop.XDirtAngle();
+                            }
+                            collisionDocu.num=collisionNum+1;
+                        }
+
+                    }
+                }
+                if(!component instanceof Ball){
+                    //判断物体各个顶点是否发生碰撞，优先级别高于边碰撞（因为小球运动轨迹很可能是抛物线）
+                    var vertexVertor=new Vector();
+                    if(vertexVertor.distBetween(ball.center[0],ball.center[1],vertex1X,vertex1Y)-ball.size*0.1*ball.scaleSize/200<0.001){
+                        //如果碰撞的是同一个物体，则不算发生了碰撞
+                        if(oldBall.collisionObject===component.id){
                             break;
                         }
                         else{
-                            ball.collisionObject=component.id;
-                            if(vertex2X>=vertex1X){
-                                var vectorSlop=new Vector(vertex1X,vertex1Y,vertex2X,vertex2Y);
+                            //碰撞次数为0，可能发生实际碰撞，但需要考虑是否是碰撞同一个物体
+                            if(collisionNum===0){
+                                collisionDocu.objectId=component.id;
+                                if(component.center[0]<=vertex1X){
+                                    var vectorVertical=new Vector(component.center[0],component.center[1],vertex1X,vertex1Y);
+                                }
+                                else{
+                                    var vectorVertical=new Vector(component.center[0],component.center[1],vertex1X,vertex1Y);
+                                }
+                                var tempX=-vectorVertical.basicForm()[1];
+                                var tempY=vectorVertical.basicForm()[0];
+                                var vectorSlop=new Vector(0.0,0.0,tempX,tempY);
+                                collisionDocu.theta=vectorSlop.XDirtAngle();
                             }
-                            else{
-                                var vectorSlop=new Vector(vertex2X,vertex2Y,vertex1X,vertex1Y);
-                            }
-                            resultTheta=vectorSlop.XDirtAngle();
+                            collisionDocu.num=collisionNum+1;
                         }
-                    }
-                }
-                //判断物体各个顶点是否发生碰撞，优先级别高于边碰撞（因为小球运动轨迹很可能是抛物线）
-                var vertexVertor=new Vector();
-                if(vertexVertor.distBetween(ball.center[0],ball.center[1],vertex1X,vertex1Y)-ball.size*0.1*ball.scaleSize/200<0.001){
-                    if(oldBall.collisionObject===component.id){
-                        oldBall.collisionObject="";
-                        resultTheta=[];
-                        break;
-                    }
-                    else{
-                        if(component.center[0]<=vertex1X){
-                            var vectorVertical=new Vector(component.center[0],component.center[1],vertex1X,vertex1Y);
-                        }
-                        else{
-                            var vectorVertical=new Vector(component.center[0],component.center[1],vertex1X,vertex1Y);
-                        }
-                        var tempX=-vectorVertical.basicForm()[1];
-                        var tempY=vectorVertical.basicForm()[0];
-                        var vectorSlop=new Vector(0.0,0.0,tempX,tempY);
-                        return vectorSlop.XDirtAngle();
                     }
                 }
                 //判断下一个时刻会不会进入游戏组件里面，如果进入游戏里面，需要使用两个时刻圆心的连线是否与边碰撞
                 var oldNewCenter=new Vector(oldBall.center[0],oldBall.center[1],ball.center[0],ball.center[1]);
                 if(oldNewCenter.isCrossLine(vertex1X,vertex1Y,vertex2X,vertex2Y)){
                     if(oldBall.collisionObject===component.id){
-                        oldBall.collisionObject="";
-                        resultTheta=[];
                         break;
                     }
                     else{
-                        if(vertex2X>=vertex1X){
-                            var vectorSlop=new Vector(vertex1X,vertex1Y,vertex2X,vertex2Y);
+                        //碰撞次数为0，可能发生实际碰撞，但需要考虑是否是碰撞同一个物体
+                        if(collisionNum===0){
+                            collisionDocu.objectId=component.id;
+                            if(vertex2X>=vertex1X){
+                                var vectorSlop=new Vector(vertex1X,vertex1Y,vertex2X,vertex2Y);
+                            }
+                            else{
+                                var vectorSlop=new Vector(vertex2X,vertex2Y,vertex1X,vertex1Y);
+                            }
+                            collisionDocu.theta=vectorSlop.XDirtAngle();
                         }
-                        else{
-                            var vectorSlop=new Vector(vertex2X,vertex2Y,vertex1X,vertex1Y);
-                        }
-                        return vectorSlop.XDirtAngle();
+                        collisionDocu.num=collisionNum+1;
                     }
                 }
             }
-            if(noCollision){
-                oldBall.collisionObject="";
-                resultTheta=[];
-            }
-            return resultTheta;
         };
     };
 
