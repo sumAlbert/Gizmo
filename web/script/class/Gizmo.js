@@ -15,16 +15,16 @@ Gizmo=(function () {
                         '}\n'
     }];//测试用
 
-    this.Board=function () {
+    this.Baffle=function () {
         this.inherit = GameComponents;
         this.inherit();
         delete this.inherit;
 
-        this.id="Board"+this.randomPostfix();
+        this.id="Baffle"+this.randomPostfix();
         this.size=1;
         this.fixFlag=false;
         this.physicsAttr=true;
-        this.rotateSpeed=4;//旋转速度
+        this.rotateSpeed=2;//旋转速度 4
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -429,7 +429,7 @@ Gizmo=(function () {
         this.physicsAll=function (physicsEngine){
             for(var playAreaComponent in this.playAreaComponents){
                 //更新下一次的状态
-                var collisionDocu={num:0,theta:[],objectId:''};
+                var collisionDocu={num:0,theta:[],objectId:'',kind:''};
                 if(this.playAreaComponents[playAreaComponent].physicsAttr){
                     //如果是球才更新下一秒的状态
                     if(this.playAreaComponents[playAreaComponent] instanceof Ball){
@@ -445,8 +445,8 @@ Gizmo=(function () {
                 }
                 if(this.playAreaComponents[playAreaComponent].rotateSpeed&&(this.playAreaComponents[playAreaComponent].rotateSpeed-0)!==0){
                     this.playAreaComponents[playAreaComponent].angel=(this.playAreaComponents[playAreaComponent].angel-0)+(this.playAreaComponents[playAreaComponent].rotateSpeed-0);
-                    if(this.playAreaComponents[playAreaComponent].angel>360){
-                        this.playAreaComponents[playAreaComponent].angel=this.playAreaComponents[playAreaComponent].angel%360;
+                    if(this.playAreaComponents[playAreaComponent].angel>180){
+                        this.playAreaComponents[playAreaComponent].angel=this.playAreaComponents[playAreaComponent].angel%180;
                     }
                 }
                 //判断当前是否和边界碰撞
@@ -464,7 +464,7 @@ Gizmo=(function () {
             this.drawAll();
         }
     };
-    
+
     this.Game=function () {
         this.GREEN=[0.0,1.0,0.0,1.0];
         this.RED=[1.0,0.0,0.0,1.0];
@@ -537,7 +537,7 @@ Gizmo=(function () {
             return (a[0]-c[0])*(b[1]-c[1])-(b[0]-c[0])*(a[1]-c[1]);
         }//叉积
     };
-    
+
     this.PhysicsEngine=function () {
         this.intervalTime=0.02;
         this.gravity=1.0;
@@ -575,8 +575,54 @@ Gizmo=(function () {
             if(collisionDocu.theta!=null&&collisionDocu.theta.length===2){
                 var tempX=2*component.speed[1]*collisionDocu.theta[0]*collisionDocu.theta[1]+component.speed[0]*(collisionDocu.theta[1]*collisionDocu.theta[1]-collisionDocu.theta[0]*collisionDocu.theta[0]);
                 var tempY=2*component.speed[0]*collisionDocu.theta[0]*collisionDocu.theta[1]+component.speed[1]*(collisionDocu.theta[0]*collisionDocu.theta[0]-collisionDocu.theta[1]*collisionDocu.theta[1]);
-                component.speed[0]=tempX*0.90;
-                component.speed[1]=tempY*0.90;
+                if(collisionDocu.kind==="acceRightBottom"){
+                    component.speed[0]=tempX*1.05;
+                    component.speed[1]=tempY*1.05;
+                    if(tempX>0&&tempX<0.02) {
+                        component.speed[0]=tempX+0.02;
+                    }
+                    if(tempX<0&&tempX>-0.02){
+                        component.speed[0]=tempX-0.02;
+                    }
+                }
+                else if(collisionDocu.kind==="acceLeftBottom"){
+                    component.speed[0]=(tempX)*1.05;
+                    component.speed[1]=(tempY)*1.05;
+                    if(tempX>0&&tempX<0.02) {
+                        component.speed[0]=tempX+0.02;
+                    }
+                    if(tempX<0&&tempX>-0.02){
+                        component.speed[0]=tempX-0.02;
+                    }
+                }
+                else if(collisionDocu.kind==="acceLeftUpper"){
+                    component.speed[0]=(tempX)*1.05;
+                    component.speed[1]=(tempY)*1.05;
+                    if(Math.max(component.speed[0],component.speed[1])<0.04){
+                        component.speed[0]=component.speed[0]*1.5;
+                        component.speed[1]=component.speed[1]*1.5;
+                    }
+                    if(Math.min(component.speed[0],component.speed[1])>0.1){
+                        component.speed[0]=component.speed[0]*0.4;
+                        component.speed[1]=component.speed[1]*0.4;
+                    }
+                }
+                else if(collisionDocu.kind==="acceRightUpper"){
+                    component.speed[0]=(tempX)*1.05;
+                    component.speed[1]=(tempY)*1.05;
+                    if(Math.max(component.speed[0],component.speed[1])<0.04){
+                        component.speed[0]=component.speed[0]*1.5;
+                        component.speed[1]=component.speed[1]*1.5;
+                    }
+                    if(Math.min(component.speed[0],component.speed[1])>0.1){
+                        component.speed[0]=component.speed[0]*0.4;
+                        component.speed[1]=component.speed[1]*0.4;
+                    }
+                }
+                else{
+                    component.speed[0]=tempX*0.90;
+                    component.speed[1]=tempY*0.90;
+                }
             }
             var acceX=component.acceleration[0]+component.extraAcce[0];
             var acceY=component.acceleration[1]+component.extraAcce[1];
@@ -661,6 +707,23 @@ Gizmo=(function () {
             var vector=new Vector(ball.center[0],ball.center[1],component.center[0],component.center[1]);
             //检测每一条边
             var crossMoreEdgeInfo={num:0,line:[],dist:[]};
+            if(component instanceof Baffle){
+                if(component.center[0]>ball.center[0]){
+                    if(component.center[1]>ball.center[1]){
+                        collisionDocu.kind="acceLeftUpper";
+                    }
+                    else{
+                        collisionDocu.kind="acceLeftBottom";
+                    }
+                }
+                else{
+                    if(component.center[1]>ball.center[1]){
+                        collisionDocu.kind="acceRightUpper";
+                    }
+                    else{
+                        collisionDocu.kind="acceRightBottom";
+                    }                }
+            }
             for(var i=0;i<component.verticesArray.length;i=i+2){
                 var centerX=ball.center[0];
                 var centerY=ball.center[1];
@@ -682,6 +745,7 @@ Gizmo=(function () {
                     var dist=vector.distBetween(heightCrossVertex[0],heightCrossVertex[1],ball.center[0],ball.center[1]);
                     //小于小球的半径就发生碰撞
                     if(dist<ball.size*0.1*ball.scaleSize/200){
+                        console.log("1");
                         //如果是碰撞同一个物体，则不算发生了碰撞
                         if(oldBall.collisionObject===component.id){
                             break;
@@ -698,6 +762,9 @@ Gizmo=(function () {
                                     var vectorSlop=new Vector(vertex2X,vertex2Y,vertex1X,vertex1Y);
                                 }
                                 collisionDocu.theta=vectorSlop.XDirtAngle();
+                                if(component instanceof Baffle){
+                                    collisionDocu.theta=[Math.sin(component.angel),Math.cos(component.angel)];
+                                }
                             }
                             if(Math.abs(component.rotateSpeed)<0.001)
                                 collisionDocu.num=collisionNum+1;
@@ -705,7 +772,9 @@ Gizmo=(function () {
 
                     }
                 }
-                if(!(component instanceof Circle)){
+                console.log(((!(component instanceof Circle))||(!(component instanceof Baffle))));
+                if((!(component instanceof Circle))&&(!(component instanceof Baffle))){
+                    console.log("2");
                     //判断物体各个顶点是否发生碰撞，优先级别高于边碰撞（因为小球运动轨迹很可能是抛物线）
                     var vertexVertor=new Vector();
                     if(vertexVertor.distBetween(ball.center[0],ball.center[1],vertex1X,vertex1Y)-ball.size*0.1*ball.scaleSize/200<0.001){
@@ -727,6 +796,9 @@ Gizmo=(function () {
                                 var tempY=vectorVertical.basicForm()[0];
                                 var vectorSlop=new Vector(0.0,0.0,tempX,tempY);
                                 collisionDocu.theta=vectorSlop.XDirtAngle();
+                                if(component instanceof Baffle){
+                                    collisionDocu.theta=[Math.sin(component.angel),Math.cos(component.angel)];
+                                }
                             }
                             if(Math.abs(component.rotateSpeed)<0.001)
                                 collisionDocu.num=collisionNum+1;
@@ -736,6 +808,7 @@ Gizmo=(function () {
                 //判断下一个时刻会不会进入游戏组件里面，如果进入游戏里面，需要使用两个时刻圆心的连线是否与边碰撞
                 var oldNewCenter=new Vector(oldBall.center[0],oldBall.center[1],ball.center[0],ball.center[1]);
                 if(oldNewCenter.isCrossLine(vertex1X,vertex1Y,vertex2X,vertex2Y)){
+                    console.log("3");
                     crossMoreEdgeInfo.num=(crossMoreEdgeInfo.num-0)+1;
                     if(oldBall.collisionObject===component.id){
                         break;
@@ -752,12 +825,14 @@ Gizmo=(function () {
                             }
                             collisionDocu.theta=vectorSlop.XDirtAngle();
                         }
+                        if(component instanceof Baffle){
+                            collisionDocu.theta=[Math.sin(component.angel),Math.cos(component.angel)];
+                        }
                         if(Math.abs(component.rotateSpeed)<0.001)
                             collisionDocu.num=collisionNum+1;
                     }
                 }
             }
-            console.log(crossMoreEdgeInfo.num);
         };
     };
 
@@ -772,6 +847,6 @@ Gizmo=(function () {
         Ball:Ball,
         PhysicsEngine:PhysicsEngine,
         Vector:Vector,
-        Board:Board
+        Baffle:Baffle
     }
 })();

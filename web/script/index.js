@@ -125,16 +125,16 @@ function main2() {
                     break;
                 }
                 case 4:{
-                    var board=new Gizmo.Board();
-                    board.update([0.0,0.0]);
+                    var baffle=new Gizmo.Baffle();
+                    baffle.update([0.0,0.0]);
                     if(!isNaN(document.getElementById("tool-item4-size").value)){
-                        board.size=document.getElementById("tool-item4-size").value;
+                        baffle.size=document.getElementById("tool-item4-size").value;
                     }
                     if(!isNaN(document.getElementById("tool-item4-angel").value)){
-                        board.angel=document.getElementById("tool-item4-angel").value;
+                        baffle.angel=document.getElementById("tool-item4-angel").value;
                     }
-                    playArea.playAreaComponents.push(board);
-                    gameGridBox.gridBoxSize=[board.size,board.size];
+                    playArea.playAreaComponents.push(baffle);
+                    gameGridBox.gridBoxSize=[baffle.size,baffle.size];
                     break;
                 }
                 default:
@@ -188,7 +188,7 @@ function main2() {
                     }
                     case 4: {
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
-                        if(gameGrid.compatibleBoxs(board,1)){
+                        if(gameGrid.compatibleBoxs(baffle,1)){
                             gameGridBox.color=gameGrid.GREEN;
                             clickEventIsOk=true;
                         }
@@ -236,10 +236,10 @@ function main2() {
                     }
                     case 4:{
                         if(clickEventIsOk){
-                            board.fixFlag=true;
+                            baffle.fixFlag=true;
                             clickEventIsOk=false;
                             game.state=0;
-                            gameGrid.fillGridBoxs(board,1);
+                            gameGrid.fillGridBoxs(baffle,1);
                             canvas.onmousedown = null;
                         }
                         break;
