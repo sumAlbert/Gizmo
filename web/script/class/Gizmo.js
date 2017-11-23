@@ -24,7 +24,7 @@ Gizmo=(function () {
         this.size=1;
         this.fixFlag=false;
         this.physicsAttr=true;
-        this.rotateSpeed=2;//旋转速度 4
+        this.rotateSpeed=3.0;//旋转速度
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -43,10 +43,10 @@ Gizmo=(function () {
         };
         this.vertexsByCenter=function () {
             this.verticesArray=[];
-            this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]+0.02);
-            this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]-0.02);
-            this.verticesArray.push(this.center[0]+0.05*this.size,this.center[1]-0.02);
-            this.verticesArray.push(this.center[0]+0.05*this.size,this.center[1]+0.02);
+            this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]+0.01);
+            this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]-0.01);
+            this.verticesArray.push(this.center[0]+0.05*this.size,this.center[1]-0.01);
+            this.verticesArray.push(this.center[0]+0.05*this.size,this.center[1]+0.01);
             this.rotateAngle();
         }
     };
@@ -578,46 +578,81 @@ Gizmo=(function () {
                 if(collisionDocu.kind==="acceRightBottom"){
                     component.speed[0]=tempX*1.05;
                     component.speed[1]=tempY*1.05;
-                    if(tempX>0&&tempX<0.02) {
-                        component.speed[0]=tempX+0.02;
+                    if(Math.min(component.speed[0],component.speed[1])>0.4){
+                        component.speed[0]=component.speed[0]*0.4;
+                        component.speed[1]=component.speed[1]*0.4;
                     }
-                    if(tempX<0&&tempX>-0.02){
-                        component.speed[0]=tempX-0.02;
+                    if(tempX>0&&tempX<1.0) {
+                        component.speed[0]=tempX-0.8;
+                    }
+                    if(tempX<0&&tempX>-1.0){
+                        component.speed[0]=-tempX-0.5;
+                    }
+                    if(tempY<1.0&&tempY>0){
+                        component.speed[1]=tempY+0.5;
+                    }
+                    if(tempY<0&&tempY>-1.0){
+                        component.speed[1]=-tempY+0.5;
                     }
                 }
                 else if(collisionDocu.kind==="acceLeftBottom"){
                     component.speed[0]=(tempX)*1.05;
                     component.speed[1]=(tempY)*1.05;
-                    if(tempX>0&&tempX<0.02) {
-                        component.speed[0]=tempX+0.02;
+                    if(Math.min(component.speed[0],component.speed[1])>0.4){
+                        component.speed[0]=component.speed[0]*0.4;
+                        component.speed[1]=component.speed[1]*0.4;
                     }
-                    if(tempX<0&&tempX>-0.02){
-                        component.speed[0]=tempX-0.02;
+                    if(tempX>0&&tempX<1.0) {
+                        component.speed[0]=tempX+0.8;
+                    }
+                    if(tempX<0&&tempX>-1.0){
+                        component.speed[0]=-tempX+0.5;
+                    }
+                    if(tempY<1.0&&tempY>0){
+                        component.speed[1]=-tempY-0.5;
+                    }
+                    if(tempY<0&&tempY>-1.0){
+                        component.speed[1]=tempY-0.5;
                     }
                 }
                 else if(collisionDocu.kind==="acceLeftUpper"){
                     component.speed[0]=(tempX)*1.05;
                     component.speed[1]=(tempY)*1.05;
-                    if(Math.max(component.speed[0],component.speed[1])<0.04){
-                        component.speed[0]=component.speed[0]*1.5;
-                        component.speed[1]=component.speed[1]*1.5;
-                    }
-                    if(Math.min(component.speed[0],component.speed[1])>0.1){
+                    if(Math.min(component.speed[0],component.speed[1])>0.4){
                         component.speed[0]=component.speed[0]*0.4;
                         component.speed[1]=component.speed[1]*0.4;
+                    }
+                    if(tempX>0&&tempX<1.0) {
+                        component.speed[0]=-tempX-0.5;
+                    }
+                    if(tempX<0&&tempX>-1.0){
+                        component.speed[0]=tempX-0.8;
+                    }
+                    if(tempY<1.0&&tempY>0){
+                        component.speed[1]=-tempY-0.5;
+                    }
+                    if(tempY<0&&tempY>-1.0){
+                        component.speed[1]=tempY-0.5;
                     }
                 }
                 else if(collisionDocu.kind==="acceRightUpper"){
                     component.speed[0]=(tempX)*1.05;
                     component.speed[1]=(tempY)*1.05;
-                    if(Math.max(component.speed[0],component.speed[1])<0.04){
-                        component.speed[0]=component.speed[0]*1.5;
-                        component.speed[1]=component.speed[1]*1.5;
-                    }
-                    if(Math.min(component.speed[0],component.speed[1])>0.1){
+                    if(Math.min(component.speed[0],component.speed[1])>0.4){
                         component.speed[0]=component.speed[0]*0.4;
                         component.speed[1]=component.speed[1]*0.4;
                     }
+                    if(tempX>0&&tempX<1.0) {
+                        component.speed[0]=-tempX-0.5;
+                    }
+                    if(tempX<0&&tempX>-1.0){
+                        component.speed[0]=tempX-0.8;
+                    }
+                    if(tempY<1.0&&tempY>0){
+                        component.speed[1]=tempY+0.5;
+                    }
+                    if(tempY<0&&tempY>-1.0)
+                        component.speed[1]=-tempY+0.5;
                 }
                 else{
                     component.speed[0]=tempX*0.90;
@@ -710,18 +745,18 @@ Gizmo=(function () {
             if(component instanceof Baffle){
                 if(component.center[0]>ball.center[0]){
                     if(component.center[1]>ball.center[1]){
-                        collisionDocu.kind="acceLeftUpper";
+                        collisionDocu.kind="acceLeftBottom";
                     }
                     else{
-                        collisionDocu.kind="acceLeftBottom";
+                        collisionDocu.kind="acceLeftUpper";
                     }
                 }
                 else{
                     if(component.center[1]>ball.center[1]){
-                        collisionDocu.kind="acceRightUpper";
+                        collisionDocu.kind="acceRightBottom";
                     }
                     else{
-                        collisionDocu.kind="acceRightBottom";
+                        collisionDocu.kind="acceRightUpper";
                     }                }
             }
             for(var i=0;i<component.verticesArray.length;i=i+2){
@@ -772,7 +807,7 @@ Gizmo=(function () {
 
                     }
                 }
-                console.log(((!(component instanceof Circle))||(!(component instanceof Baffle))));
+                console.log(((!(component instanceof Circle))&&(!(component instanceof Baffle))));
                 if((!(component instanceof Circle))&&(!(component instanceof Baffle))){
                     console.log("2");
                     //判断物体各个顶点是否发生碰撞，优先级别高于边碰撞（因为小球运动轨迹很可能是抛物线）
@@ -808,28 +843,30 @@ Gizmo=(function () {
                 //判断下一个时刻会不会进入游戏组件里面，如果进入游戏里面，需要使用两个时刻圆心的连线是否与边碰撞
                 var oldNewCenter=new Vector(oldBall.center[0],oldBall.center[1],ball.center[0],ball.center[1]);
                 if(oldNewCenter.isCrossLine(vertex1X,vertex1Y,vertex2X,vertex2Y)){
-                    console.log("3");
-                    crossMoreEdgeInfo.num=(crossMoreEdgeInfo.num-0)+1;
-                    if(oldBall.collisionObject===component.id){
-                        break;
-                    }
-                    else{
-                        //碰撞次数为0，可能发生实际碰撞，但需要考虑是否是碰撞同一个物体
-                        if(collisionNum===0){
-                            collisionDocu.objectId=component.id;
-                            if(vertex2X>=vertex1X){
-                                var vectorSlop=new Vector(vertex1X,vertex1Y,vertex2X,vertex2Y);
-                            }
-                            else{
-                                var vectorSlop=new Vector(vertex2X,vertex2Y,vertex1X,vertex1Y);
-                            }
-                            collisionDocu.theta=vectorSlop.XDirtAngle();
+                    if(!(component instanceof Baffle)){
+                        console.log("3");
+                        crossMoreEdgeInfo.num = (crossMoreEdgeInfo.num - 0) + 1;
+                        if (oldBall.collisionObject === component.id) {
+                            break;
                         }
-                        if(component instanceof Baffle){
-                            collisionDocu.theta=[Math.sin(component.angel),Math.cos(component.angel)];
+                        else {
+                            //碰撞次数为0，可能发生实际碰撞，但需要考虑是否是碰撞同一个物体
+                            if (collisionNum === 0) {
+                                collisionDocu.objectId = component.id;
+                                if (vertex2X >= vertex1X) {
+                                    var vectorSlop = new Vector(vertex1X, vertex1Y, vertex2X, vertex2Y);
+                                }
+                                else {
+                                    var vectorSlop = new Vector(vertex2X, vertex2Y, vertex1X, vertex1Y);
+                                }
+                                collisionDocu.theta = vectorSlop.XDirtAngle();
+                            }
+                            if (component instanceof Baffle) {
+                                collisionDocu.theta = [Math.sin(component.angel), Math.cos(component.angel)];
+                            }
+                            if (Math.abs(component.rotateSpeed) < 0.001)
+                                collisionDocu.num = collisionNum + 1;
                         }
-                        if(Math.abs(component.rotateSpeed)<0.001)
-                            collisionDocu.num=collisionNum+1;
                     }
                 }
             }
