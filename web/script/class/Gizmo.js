@@ -393,26 +393,24 @@ Gizmo=(function () {
             for(var playAreaComponent in this.playAreaComponents){
                 //更新下一次的状态
                 if(this.playAreaComponents[playAreaComponent].physicsAttr){
+                    //如果是球才更新下一秒的状态
                     if(this.playAreaComponents[playAreaComponent] instanceof Ball){
+                        //获取下一秒的状态，并且暂时保存
                         var currentBall=physicsEngine.nextState(this.playAreaComponents[playAreaComponent]);
                         for(var physicsComponent in this.playAreaComponents){
+                            //设置下一秒的碰撞角度
                             if(physicsComponent!==playAreaComponent&&this.playAreaComponents[physicsComponent].physicsAttr){
                                 this.playAreaComponents[playAreaComponent].nextCollisionTheta=physicsEngine.componentCollisionCheck(this.playAreaComponents[playAreaComponent],currentBall,this.playAreaComponents[physicsComponent]);
                             }
+                            //检查到一个碰撞物，这一时间段不检测其他碰撞物
                             if(this.playAreaComponents[playAreaComponent].nextCollisionTheta&&this.playAreaComponents[playAreaComponent].nextCollisionTheta.length>=1){
                                 break;
                             }
                         }
                     }
                 }
-                if(this.playAreaComponents[playAreaComponent].nextCollisionTheta&&this.playAreaComponents[playAreaComponent].nextCollisionTheta.length>=1){
-                    console.log(this.playAreaComponents[playAreaComponent]);
-                }
                 //判断当前是否和边界碰撞
                 physicsEngine.edgeCollision(this.playAreaComponents[playAreaComponent]);
-                if(this.playAreaComponents[playAreaComponent].nextCollisionTheta&&this.playAreaComponents[playAreaComponent].nextCollisionTheta.length>=1){
-                    console.log(this.playAreaComponents[playAreaComponent]);
-                }
                 physicsEngine.enterNextState(this.playAreaComponents[playAreaComponent]);
             }
         };
@@ -528,8 +526,15 @@ Gizmo=(function () {
             if(component.nextCollisionTheta!=null&&component.nextCollisionTheta.length===2){
                 var tempX=2*component.speed[1]*component.nextCollisionTheta[0]*component.nextCollisionTheta[1]+component.speed[0]*(component.nextCollisionTheta[1]*component.nextCollisionTheta[1]-component.nextCollisionTheta[0]*component.nextCollisionTheta[0]);
                 var tempY=2*component.speed[0]*component.nextCollisionTheta[0]*component.nextCollisionTheta[1]+component.speed[1]*(component.nextCollisionTheta[0]*component.nextCollisionTheta[0]-component.nextCollisionTheta[1]*component.nextCollisionTheta[1]);
-                component.speed[0]=tempX*0.95;
-                component.speed[1]=tempY*0.95;
+                //判断是否停在物体上面
+                if(tempX<component.minSpeed&&tempY<component.minSpeed){
+                    component.speed[0]=0.0;
+                    component.speed[1]=0.0;
+                    component.acceleration=[0.0,0.0];
+                    component.extraAcce=[0.0,0.0];
+                }
+                component.speed[0]=tempX*0.90;
+                component.speed[1]=tempY*0.90;
                 component.nextCollisionTheta=[];
             }
             var acceX=component.acceleration[0]+component.extraAcce[0];
@@ -546,6 +551,7 @@ Gizmo=(function () {
             }
             var distX=(oldSpeedX+newSpeedX)*this.intervalTime/2;
             var distY=(oldSpeedY+newSpeedY)*this.intervalTime/2;
+            //更新下一时刻的状态
             component.speed[0]=newSpeedX;
             component.speed[1]=newSpeedY;
             component.center[0]=component.center[0]+distX;
@@ -554,7 +560,15 @@ Gizmo=(function () {
             component.extraAcce[0]=0.0;
             component.extraAcce[1]=0.0;
         };
+        /**
+         * 边界控制
+         * @param component 检测的物体
+         */
         this.edgeCollision=function (component) {
+            if(component.speed[0]===0.0&&component.speed[1]===0.0&&component.acceleration[1]===0.0&&component.acceleration[0]===0.0){
+                return;
+            }
+            //与上边界碰撞
             if(component.center[0]-(component.size*0.1*component.scaleSize/200-1.0)<0.00001&&component.speed[0]<0){
                 if(Math.abs(component.speed[0])-component.minSpeed<=0.001) {
                     component.speed[0]=0.0;
@@ -562,6 +576,7 @@ Gizmo=(function () {
                 component.speed[0]=-component.speed[0];
                 component.speed[0]=component.speed[0]*0.8;
             }
+            //与下边界碰撞
             if(component.center[1]-(component.size*0.1*component.scaleSize/200-1.0)<0.00001&&component.speed[1]<=0){//底边
                 if(Math.abs(component.speed[1])-component.minSpeed<=0.001) {
                     component.speed[1]=0.0;
@@ -570,6 +585,7 @@ Gizmo=(function () {
                 component.speed[1]=-component.speed[1];
                 component.speed[1]=component.speed[1]*0.8;
             }
+            //与右边界碰撞
             if(0.00001>1.0-component.size*0.1*component.scaleSize/200-component.center[0]&&component.speed[0]>0){
                 if(Math.abs(component.speed[0])-component.minSpeed<=0.001) {
                     component.speed[0]=0.0;
@@ -577,15 +593,31 @@ Gizmo=(function () {
                 component.speed[0]=-component.speed[0];
                 component.speed[0]=component.speed[0]*0.8;
             }
+            //与左边界碰撞
             if(0.00001>1.0-component.size*0.1*component.scaleSize/200-component.center[1]&&component.speed[1]>0){
                 component.speed[1]=-component.speed[1];
                 component.speed[1]=component.speed[1]*0.8;
             }
         };
+
+        /**
+         * 判断小球是否和游戏组件发生碰撞
+         * @param oldBall 上一时刻的小球
+         * @param ball 下一个时刻的小球
+         * @param component 游戏组件
+         * @returns {*}
+         * 需要设置小球碰撞的物体id(避免在相邻的两个时刻重复碰撞同一个物体)
+         * 需要设置小球碰撞斜面的与X轴夹角的正余弦
+         */
         this.componentCollisionCheck=function (oldBall,ball,component){
+            if(oldBall.speed[0]===0.0&&oldBall.speed[1]===0.0&&oldBall.acceleration[1]===0.0&&oldBall.acceleration[0]===0.0){
+                return [];
+            }
+            //碰撞检测
             var vector=new Vector(ball.center[0],ball.center[1],component.center[0],component.center[1]);
-            var noCollision=true;
-            var resultTheta=null;
+            var noCollision=true;//本次是否发生碰撞
+            var resultTheta=null;//如果发生碰撞返回碰撞斜面与X正向的角的正弦函数和余弦函数
+            //检测每一条边
             for(var i=0;i<component.verticesArray.length;i=i+2){
                 var centerX=ball.center[0];
                 var centerY=ball.center[1];
@@ -599,10 +631,13 @@ Gizmo=(function () {
                     var vertex2X=component.verticesArray[i+2];
                     var vertex2Y=component.verticesArray[i+3];
                 }
+                //获取小球到边的垂线与边所在直线的交点
                 var heightCrossVertex=vector.heightCross(centerX,centerY,vertex1X,vertex1Y,vertex2X,vertex2Y);
-                //判断在不进入游戏组建的时刻会不会发生碰撞
+                //判断在不进入游戏组件的时刻会不会发生碰撞（当垂线交点在线段上）
                 if((heightCrossVertex[0]<=Math.max(vertex1X,vertex2X))&&(heightCrossVertex[0]>=Math.min(vertex1X,vertex2X))&&(heightCrossVertex[1]<=Math.max(vertex1Y,vertex2Y))&&(heightCrossVertex[1]>=Math.min(vertex1Y,vertex2Y))){
+                    //判断垂线的交点是否在小球的半径里面
                     var dist=vector.distBetween(heightCrossVertex[0],heightCrossVertex[1],ball.center[0],ball.center[1]);
+                    //小于小球的半径就发生碰撞
                     if(dist<ball.size*0.1*ball.scaleSize/200){
                         noCollision=false;
                         if(oldBall.collisionObject===component.id){
@@ -622,6 +657,7 @@ Gizmo=(function () {
                         }
                     }
                 }
+                //判断物体各个顶点是否发生碰撞，优先级别高于边碰撞（因为小球运动轨迹很可能是抛物线）
                 var vertexVertor=new Vector();
                 if(vertexVertor.distBetween(ball.center[0],ball.center[1],vertex1X,vertex1Y)-ball.size*0.1*ball.scaleSize/200<0.001){
                     if(oldBall.collisionObject===component.id){
@@ -642,7 +678,7 @@ Gizmo=(function () {
                         return vectorSlop.XDirtAngle();
                     }
                 }
-                //判断下一个时刻会不会进入游戏组件里面
+                //判断下一个时刻会不会进入游戏组件里面，如果进入游戏里面，需要使用两个时刻圆心的连线是否与边碰撞
                 var oldNewCenter=new Vector(oldBall.center[0],oldBall.center[1],ball.center[0],ball.center[1]);
                 if(oldNewCenter.isCrossLine(vertex1X,vertex1Y,vertex2X,vertex2Y)){
                     if(oldBall.collisionObject===component.id){
@@ -663,6 +699,7 @@ Gizmo=(function () {
             }
             if(noCollision){
                 oldBall.collisionObject="";
+                resultTheta=[];
             }
             return resultTheta;
         };
