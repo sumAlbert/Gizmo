@@ -124,6 +124,19 @@ function main2() {
                     gameGridBox.gridBoxSize=[ball.size,ball.size];
                     break;
                 }
+                case 4:{
+                    var board=new Gizmo.Board();
+                    board.update([0.0,0.0]);
+                    if(!isNaN(document.getElementById("tool-item4-size").value)){
+                        board.size=document.getElementById("tool-item4-size").value;
+                    }
+                    if(!isNaN(document.getElementById("tool-item4-angel").value)){
+                        board.angel=document.getElementById("tool-item4-angel").value;
+                    }
+                    playArea.playAreaComponents.push(board);
+                    gameGridBox.gridBoxSize=[board.size,board.size];
+                    break;
+                }
                 default:
                     break;
             }
@@ -173,6 +186,18 @@ function main2() {
                         }
                         break;
                     }
+                    case 4: {
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                        if(gameGrid.compatibleBoxs(board,1)){
+                            gameGridBox.color=gameGrid.GREEN;
+                            clickEventIsOk=true;
+                        }
+                        else{
+                            gameGridBox.color=gameGrid.RED;
+                            clickEventIsOk=false;
+                        }
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -209,6 +234,16 @@ function main2() {
                         }
                         break;
                     }
+                    case 4:{
+                        if(clickEventIsOk){
+                            board.fixFlag=true;
+                            clickEventIsOk=false;
+                            game.state=0;
+                            gameGrid.fillGridBoxs(board,1);
+                            canvas.onmousedown = null;
+                        }
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -221,6 +256,8 @@ function main2() {
                 if(game.state===2)
                     playArea.playAreaComponents.pop();
                 if(game.state===3)
+                    playArea.playAreaComponents.pop();
+                if(game.state===4)
                     playArea.playAreaComponents.pop();
                 playArea.drawAll();
                 canvas.onmousemove=null;
@@ -243,6 +280,12 @@ function main2() {
     document.getElementById("tool-item3").addEventListener("click",function () {
         if(game.state!==3){
             game.state=3;
+        }
+    });
+    //新建长板
+    document.getElementById("tool-item4").addEventListener("click",function () {
+        if(game.state!==4){
+            game.state=4;
         }
     });
     //运行

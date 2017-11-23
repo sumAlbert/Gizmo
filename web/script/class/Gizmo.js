@@ -15,6 +15,42 @@ Gizmo=(function () {
                         '}\n'
     }];//测试用
 
+    this.Board=function () {
+        this.inherit = GameComponents;
+        this.inherit();
+        delete this.inherit;
+
+        this.id="Board"+this.randomPostfix();
+        this.size=1;
+        this.fixFlag=false;
+        this.physicsAttr=true;
+        this.rotateSpeed=4;//旋转速度
+        this.update=function (mousePosition) {
+            this.verticesArray=[];
+            var leftUpperX=Math.floor(10*mousePosition[0])/10;
+            var leftUpperY=Math.floor(10*mousePosition[1])/10+0.1;
+            this.center=[leftUpperX+0.05*this.size,leftUpperY-0.05*this.size];
+            this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]+0.01);
+            this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]-0.01);
+            this.verticesArray.push(this.center[0]+0.05*this.size,this.center[1]-0.01);
+            this.verticesArray.push(this.center[0]+0.05*this.size,this.center[1]+0.01);
+            this.rotateAngle();
+        };
+        this.draw=function (gl,mousePosition) {
+            if(!this.fixFlag)
+                this.update(mousePosition);
+            this.drawComponents(gl,gl.TRIANGLE_FAN,4);
+        };
+        this.vertexsByCenter=function () {
+            this.verticesArray=[];
+            this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]+0.02);
+            this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]-0.02);
+            this.verticesArray.push(this.center[0]+0.05*this.size,this.center[1]-0.02);
+            this.verticesArray.push(this.center[0]+0.05*this.size,this.center[1]+0.02);
+            this.rotateAngle();
+        }
+    };
+
     this.Ball=function () {
         this.inherit = GameComponents;
         this.inherit();
@@ -41,6 +77,7 @@ Gizmo=(function () {
                 var sinB=Math.sin(radian);
                 this.verticesArray.push(this.center[0]+0.1*this.size*cosB*this.scaleSize/200,this.center[1]+0.1*this.size*sinB*this.scaleSize/200);
             }
+            this.rotateAngle();
         };
         this.draw=function (gl,mousePosition) {
             if(!this.fixFlag)
@@ -284,8 +321,8 @@ Gizmo=(function () {
         this.rotateDirection=true;//true--逆时针，false--顺时针
         this.verticesArray=[];//边界点
         this.size=1;
-        this.fixFlag=false;
-        this.physicsAttr=false;
+        this.fixFlag=false;//是否跟随鼠标移动
+        this.physicsAttr=false;//是否拥有物理特性
         this.minSpeed=0.2;
         this.extraAcce=[0.0,0.0];//暂时地给组件加速度
         this.collisionObject="";
@@ -404,6 +441,12 @@ Gizmo=(function () {
                                 physicsEngine.componentCollisionCheck(this.playAreaComponents[playAreaComponent],currentBall,this.playAreaComponents[physicsComponent],collisionDocu);
                             }
                         }
+                    }
+                }
+                if(this.playAreaComponents[playAreaComponent].rotateSpeed&&(this.playAreaComponents[playAreaComponent].rotateSpeed-0)!==0){
+                    this.playAreaComponents[playAreaComponent].angel=(this.playAreaComponents[playAreaComponent].angel-0)+(this.playAreaComponents[playAreaComponent].rotateSpeed-0);
+                    if(this.playAreaComponents[playAreaComponent].angel>360){
+                        this.playAreaComponents[playAreaComponent].angel=this.playAreaComponents[playAreaComponent].angel%360;
                     }
                 }
                 //判断当前是否和边界碰撞
@@ -617,6 +660,7 @@ Gizmo=(function () {
             //碰撞检测
             var vector=new Vector(ball.center[0],ball.center[1],component.center[0],component.center[1]);
             //检测每一条边
+            var crossMoreEdgeInfo={num:0,line:[],dist:[]};
             for(var i=0;i<component.verticesArray.length;i=i+2){
                 var centerX=ball.center[0];
                 var centerY=ball.center[1];
@@ -655,7 +699,8 @@ Gizmo=(function () {
                                 }
                                 collisionDocu.theta=vectorSlop.XDirtAngle();
                             }
-                            collisionDocu.num=collisionNum+1;
+                            if(Math.abs(component.rotateSpeed)<0.001)
+                                collisionDocu.num=collisionNum+1;
                         }
 
                     }
@@ -683,13 +728,15 @@ Gizmo=(function () {
                                 var vectorSlop=new Vector(0.0,0.0,tempX,tempY);
                                 collisionDocu.theta=vectorSlop.XDirtAngle();
                             }
-                            collisionDocu.num=collisionNum+1;
+                            if(Math.abs(component.rotateSpeed)<0.001)
+                                collisionDocu.num=collisionNum+1;
                         }
                     }
                 }
                 //判断下一个时刻会不会进入游戏组件里面，如果进入游戏里面，需要使用两个时刻圆心的连线是否与边碰撞
                 var oldNewCenter=new Vector(oldBall.center[0],oldBall.center[1],ball.center[0],ball.center[1]);
                 if(oldNewCenter.isCrossLine(vertex1X,vertex1Y,vertex2X,vertex2Y)){
+                    crossMoreEdgeInfo.num=(crossMoreEdgeInfo.num-0)+1;
                     if(oldBall.collisionObject===component.id){
                         break;
                     }
@@ -705,10 +752,12 @@ Gizmo=(function () {
                             }
                             collisionDocu.theta=vectorSlop.XDirtAngle();
                         }
-                        collisionDocu.num=collisionNum+1;
+                        if(Math.abs(component.rotateSpeed)<0.001)
+                            collisionDocu.num=collisionNum+1;
                     }
                 }
             }
+            console.log(crossMoreEdgeInfo.num);
         };
     };
 
@@ -722,6 +771,7 @@ Gizmo=(function () {
         Circle:Circle,
         Ball:Ball,
         PhysicsEngine:PhysicsEngine,
-        Vector:Vector
+        Vector:Vector,
+        Board:Board
     }
 })();
