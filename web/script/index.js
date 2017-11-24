@@ -84,6 +84,8 @@ function main2() {
                 playArea.drawAll();
             },20);
             var clickEventIsOk=true;
+            var outEventIsOk=true;
+            //初始化组件
             switch (game.state){
                 case 1:{
                     var triangle=new Gizmo.Triangle();
@@ -137,6 +139,16 @@ function main2() {
                     gameGridBox.gridBoxSize=[baffle.size,baffle.size];
                     break;
                 }
+                case 5:{
+                    var absorber= new Gizmo.Absorber();
+                    absorber.center=[0.0,0.0];
+                    if(!isNaN(document.getElementById("tool-item5-size").value)){
+                        absorber.size=document.getElementById("tool-item5-size").value;
+                    }
+                    playArea.playAreaComponents.push(absorber);
+                    gameGridBox.gridBoxSize=[absorber.size,absorber.size];
+                    break;
+                }
                 default:
                     break;
             }
@@ -148,6 +160,7 @@ function main2() {
                 x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
                 y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
                 playArea.mousePosition=[x,y];
+
                 switch (game.state){
                     case 1: {
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
@@ -198,6 +211,21 @@ function main2() {
                         }
                         break;
                     }
+                    case 5: {
+                        if(playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag){
+                            playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                            if(gameGrid.compatibleBoxs(absorber,1)){
+                                gameGridBox.color=gameGrid.GREEN;
+                                outEventIsOk=true;
+                                playArea.playAreaComponents[playArea.playAreaComponents.length - 1].updateCenters()
+                            }
+                            else{
+                                gameGridBox.color=gameGrid.RED;
+                                outEventIsOk=false;
+                            }
+                            break;
+                        }
+                    }
                     default:
                         break;
                 }
@@ -244,8 +272,23 @@ function main2() {
                         }
                         break;
                     }
+                    case 5:{
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=true;
+                        break;
+                    }
                     default:
                         break;
+                }
+            };
+            canvas.onmouseup = function (ev) {
+                if(game.state===5){
+                    if(outEventIsOk){
+                        absorber.fixFlag=true;
+                        outEventIsOk=false;
+                        game.state=0;
+                        gameGrid.fillGridBoxs(absorber,2);
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=false;
+                    }
                 }
             };
             canvas.onmouseout = function (ev) {
@@ -258,6 +301,8 @@ function main2() {
                 if(game.state===3)
                     playArea.playAreaComponents.pop();
                 if(game.state===4)
+                    playArea.playAreaComponents.pop();
+                if(game.state===5)
                     playArea.playAreaComponents.pop();
                 playArea.drawAll();
                 canvas.onmousemove=null;
@@ -286,6 +331,12 @@ function main2() {
     document.getElementById("tool-item4").addEventListener("click",function () {
         if(game.state!==4){
             game.state=4;
+        }
+    });
+    //新建吸收器
+    document.getElementById("tool-item5").addEventListener("click",function () {
+        if(game.state!==5){
+            game.state=5;
         }
     });
     //运行
