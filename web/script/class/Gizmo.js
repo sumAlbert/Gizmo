@@ -31,11 +31,17 @@ Gizmo=(function () {
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
             var leftUpperY=Math.floor(10*mousePosition[1])/10+0.1;
             this.center=[leftUpperX+0.05*this.size,leftUpperY-0.05*this.size];
+            if(arguments[1]){
+                this.updateCenters();
+            }
+            else{
+                this.center=[];
+                this.centers=[];
+                this.startFlag=false;
+            }
             this.vertexsByCenter();
         };
         this.draw=function (gl,mousePosition) {
-            if(!this.fixFlag)
-                this.update(mousePosition);
             this.drawComponents(gl,gl.TRIANGLES,this.verticesArray.length/2);
         };
         this.updateCenters=function () {
@@ -94,7 +100,7 @@ Gizmo=(function () {
                 }
             }
             return false;
-        }
+        };
     };
 
     this.Absorber=function () {
@@ -113,11 +119,17 @@ Gizmo=(function () {
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
             var leftUpperY=Math.floor(10*mousePosition[1])/10+0.1;
             this.center=[leftUpperX+0.05*this.size,leftUpperY-0.05*this.size];
+            if(arguments[1]){
+                this.updateCenters();
+            }
+            else{
+                this.center=[];
+                this.centers=[];
+                this.startFlag=false;
+            }
             this.vertexsByCenter();
         };
         this.draw=function (gl,mousePosition) {
-            if(!this.fixFlag)
-                this.update(mousePosition);
             this.drawComponents(gl,gl.TRIANGLES,this.verticesArray.length/2);
         };
         this.updateCenters=function () {
@@ -150,7 +162,6 @@ Gizmo=(function () {
                     }
                 }
             }
-            console.log(this.centers);
         };
         //根据新获得的中心，获得周围点的坐标
         this.vertexsByCenter=function () {
@@ -179,7 +190,7 @@ Gizmo=(function () {
                 }
             }
             return false;
-        }
+        };
     };
 
     this.Baffle=function () {
@@ -771,7 +782,7 @@ Gizmo=(function () {
         };
         this.enterNextState=function (component,collisionDocu) {
             //如果碰撞超过两个物体
-            if(collisionDocu.num>1){
+            if(collisionDocu.num>=1){
                 if(Math.max(Math.abs(component.speed[1]),Math.abs(component.speed[0]))-component.minSpeed<=0.001) {
                     component.speed[0]=0.0;
                     component.speed[1]=0.0;
@@ -891,6 +902,7 @@ Gizmo=(function () {
             component.extraAcce[0]=0.0;
             component.extraAcce[1]=0.0;
         };
+
         /**
          * 边界控制
          * @param component 检测的物体
@@ -950,19 +962,30 @@ Gizmo=(function () {
             var vector=new Vector(ball.center[0],ball.center[1],component.center[0],component.center[1]);
             //检测每一条边
             var crossMoreEdgeInfo={num:0,line:[],dist:[]};
-            //如果是吸收器
             for(var i=0;i<component.verticesArray.length;i=i+2){
                 var centerX=ball.center[0];
                 var centerY=ball.center[1];
                 var vertex1X=component.verticesArray[i];
                 var vertex1Y=component.verticesArray[i+1];
-                if(i+2>=component.verticesArray.length){
-                    var vertex2X=component.verticesArray[0];
-                    var vertex2Y=component.verticesArray[1];
+                if(component instanceof Track){
+                    if((i+2)%6===0){
+                        var vertex2X=component.verticesArray[i-4];
+                        var vertex2Y=component.verticesArray[i-3];
+                    }
+                    else{
+                        var vertex2X=component.verticesArray[i+2];
+                        var vertex2Y=component.verticesArray[i+3];
+                    }
                 }
                 else{
-                    var vertex2X=component.verticesArray[i+2];
-                    var vertex2Y=component.verticesArray[i+3];
+                    if(i+2>=component.verticesArray.length){
+                        var vertex2X=component.verticesArray[0];
+                        var vertex2Y=component.verticesArray[1];
+                    }
+                    else{
+                        var vertex2X=component.verticesArray[i+2];
+                        var vertex2Y=component.verticesArray[i+3];
+                    }
                 }
                 //获取小球到边的垂线与边所在直线的交点
                 var heightCrossVertex=vector.heightCross(centerX,centerY,vertex1X,vertex1Y,vertex2X,vertex2Y);
@@ -993,7 +1016,17 @@ Gizmo=(function () {
                                 else{
                                     var vectorSlop=new Vector(vertex2X,vertex2Y,vertex1X,vertex1Y);
                                 }
-                                collisionDocu.theta=vectorSlop.XDirtAngle();
+                                if(component instanceof Track){
+                                    var tempTheta=vectorSlop.XDirtAngle();
+                                    //如果是0/90/180/270才设置
+                                    if((1-Math.abs(tempTheta[0]))<0.001||(1-Math.abs(tempTheta[1]))<0.001){
+                                        collisionDocu.theta=vectorSlop.XDirtAngle();
+                                        console.log(collisionDocu.theta);
+                                    }
+                                }
+                                else{
+                                    collisionDocu.theta=vectorSlop.XDirtAngle();
+                                }
                                 if(component instanceof Baffle){
                                     collisionDocu.theta=[Math.sin(component.angel),Math.cos(component.angel)];
                                 }
@@ -1051,6 +1084,8 @@ Gizmo=(function () {
                                 var tempY=vectorVertical.basicForm()[0];
                                 var vectorSlop=new Vector(0.0,0.0,tempX,tempY);
                                 collisionDocu.theta=vectorSlop.XDirtAngle();
+                                oldBall.speed[0]=oldBall.speed[0]+0.1;
+                                oldBall.speed[1]=oldBall.speed[1]+0.1;
                                 if(component instanceof Baffle){
                                     collisionDocu.theta=[Math.sin(component.angel),Math.cos(component.angel)];
                                 }
@@ -1098,7 +1133,14 @@ Gizmo=(function () {
                                 else {
                                     var vectorSlop = new Vector(vertex2X, vertex2Y, vertex1X, vertex1Y);
                                 }
-                                collisionDocu.theta = vectorSlop.XDirtAngle();
+                                if(component instanceof Track){
+                                    var tempTheta=vectorSlop.XDirtAngle();
+                                    //如果是0/90/180/270才设置
+                                    if((1-Math.abs(tempTheta[0]))<0.001||(1-Math.abs(tempTheta[1]))<0.001){
+                                        collisionDocu.theta=vectorSlop.XDirtAngle();
+                                        console.log(collisionDocu.theta);
+                                    }
+                                }
                             }
                             if (component instanceof Baffle) {
                                 collisionDocu.theta = [Math.sin(component.angel), Math.cos(component.angel)];
@@ -1122,7 +1164,6 @@ Gizmo=(function () {
                                     }
                                 }
                             }
-
                             if (Math.abs(component.rotateSpeed) < 0.001)
                                 collisionDocu.num = collisionNum + 1;
                         }
