@@ -160,6 +160,16 @@ function main2() {
                     gameGridBox.gridBoxSize=[track.size,track.size];
                     break;
                 }
+                case 7:{
+                    var leftBaffle=new Gizmo.LeftBaffle();
+                    leftBaffle.update([0.0,0.0]);
+                    if(!isNaN(document.getElementById("tool-item7-size").value)){
+                        leftBaffle.size=document.getElementById("tool-item7-size").value;
+                    }
+                    playArea.playAreaComponents.push(leftBaffle);
+                    gameGridBox.gridBoxSize=[leftBaffle.size,leftBaffle.size];
+                    break;
+                }
                 default:
                     break;
             }
@@ -257,6 +267,18 @@ function main2() {
                             break;
                         }
                     }
+                    case 7: {
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                        if(gameGrid.compatibleBoxs(leftBaffle,2)){
+                            gameGridBox.color=gameGrid.GREEN;
+                            clickEventIsOk=true;
+                        }
+                        else{
+                            gameGridBox.color=gameGrid.RED;
+                            clickEventIsOk=false;
+                        }
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -311,6 +333,16 @@ function main2() {
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=true;
                         break;
                     }
+                    case 7:{
+                        if(clickEventIsOk){
+                            leftBaffle.fixFlag=true;
+                            clickEventIsOk=false;
+                            game.state=0;
+                            gameGrid.fillGridBoxs(leftBaffle,1);
+                            canvas.onmousedown = null;
+                        }
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -349,6 +381,8 @@ function main2() {
                 if(game.state===5)
                     playArea.playAreaComponents.pop();
                 if(game.state===6)
+                    playArea.playAreaComponents.pop();
+                if(game.state===7)
                     playArea.playAreaComponents.pop();
                 playArea.drawAll();
                 canvas.onmousemove=null;
@@ -391,6 +425,12 @@ function main2() {
             game.state=6;
         }
     });
+    //新建顺时针旋转挡板
+    document.getElementById("tool-item7").addEventListener("click",function () {
+        if(game.state!==7){
+            game.state=7;
+        }
+    });
     //运行
     document.getElementById("run").addEventListener("click",function () {
         game.modes=1;
@@ -398,11 +438,30 @@ function main2() {
             playArea.physicsAll(physicsEngine);
             playArea.drawAll();
         },20);
+        window.addEventListener('keydown', doKeyDown, true);
     });
     //停止
     document.getElementById("stop").addEventListener("click",function () {
         game.modes=0;
         if(runAllHandler)
             clearInterval(runAllHandler);
+        window.removeEventListener('keydown', doKeyDown, true);
     });
+
+    doKeyDown=function doKeyDown(e) {
+        var keyID = e.keyCode ? e.keyCode :e.which;
+        playArea.receiveKeyDown(keyID);
+        // if(keyID === 38 || keyID === 87)  { // up arrow and W
+        //     console.log('123');
+        // }
+        // if(keyID === 39 || keyID === 68)  { // right arrow and D
+        //     console.log('234');
+        // }
+        // if(keyID === 40 || keyID === 83)  { // down arrow and S
+        //     console.log('345');
+        // }
+        // if(keyID === 37 || keyID === 65)  { // left arrow and A
+        //     console.log('456');
+        // }
+    }
 }

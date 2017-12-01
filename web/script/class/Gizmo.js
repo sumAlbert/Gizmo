@@ -15,6 +15,42 @@ Gizmo=(function () {
                         '}\n'
     }];//测试用
 
+    this.LeftBaffle=function () {
+        this.inherit = GameComponents;
+        this.inherit();
+        delete this.inherit;
+
+        this.id="LeftBaffle"+this.randomPostfix();
+        this.size=1;
+        this.fixFlag=false;
+        this.physicsAttr=true;
+        this.rotateSpeed=0.0;//旋转速度
+        this.update=function (mousePosition) {
+            this.verticesArray=[];
+            var leftUpperX=Math.floor(10*mousePosition[0])/10;
+            var leftUpperY=Math.floor(10*mousePosition[1])/10+0.1;
+            this.center=[leftUpperX,leftUpperY];
+            this.verticesArray.push(this.center[0]-0.01,this.center[1]);
+            this.verticesArray.push(this.center[0]-0.01,this.center[1]-0.1*this.size);
+            this.verticesArray.push(this.center[0]+0.01,this.center[1]-0.1*this.size);
+            this.verticesArray.push(this.center[0]+0.01,this.center[1]);
+            this.rotateAngle();
+        };
+        this.draw=function (gl,mousePosition) {
+            if(!this.fixFlag)
+                this.update(mousePosition);
+            this.drawComponents(gl,gl.TRIANGLE_FAN,4);
+        };
+        this.vertexsByCenter=function () {
+            this.verticesArray=[];
+            this.verticesArray.push(this.center[0]-0.01,this.center[1]);
+            this.verticesArray.push(this.center[0]-0.01,this.center[1]-0.1*this.size);
+            this.verticesArray.push(this.center[0]+0.01,this.center[1]-0.1*this.size);
+            this.verticesArray.push(this.center[0]+0.01,this.center[1]);
+            this.rotateAngle();
+        }
+    };
+
     this.Track=function () {
         this.inherit = GameComponents;
         this.inherit();
@@ -137,12 +173,12 @@ Gizmo=(function () {
                         result.outPoint[1]=this.centers[1];
                         break;
                     case 1:
-                        result.startLine[0]=this.centers[0]-0.05;
-                        result.startLine[1]=this.centers[1]-0.05;
-                        result.startLine[2]=this.centers[0]+0.05;
-                        result.startLine[3]=this.centers[1]-0.05;
+                        result.startLine[0]=this.centers[0]+0.05;
+                        result.startLine[1]=this.centers[1]+0.05;
+                        result.startLine[2]=this.centers[0]-0.05;
+                        result.startLine[3]=this.centers[1]+0.05;
                         result.outPoint[0]=this.centers[0];
-                        result.outPoint[1]=this.centers[1]-0.1;
+                        result.outPoint[1]=this.centers[1]+0.1;
                         break;
                     case 2:
                         result.startLine[0]=this.centers[0]+0.05;
@@ -153,16 +189,16 @@ Gizmo=(function () {
                         result.outPoint[1]=this.centers[1];
                         break;
                     default:
-                        result.startLine[0]=this.centers[0]+0.05;
-                        result.startLine[1]=this.centers[1]+0.05;
-                        result.startLine[2]=this.centers[0]-0.05;
-                        result.startLine[3]=this.centers[1]+0.05;
+                        result.startLine[0]=this.centers[0]-0.05;
+                        result.startLine[1]=this.centers[1]-0.05;
+                        result.startLine[2]=this.centers[0]+0.05;
+                        result.startLine[3]=this.centers[1]-0.05;
                         result.outPoint[0]=this.centers[0];
-                        result.outPoint[1]=this.centers[1]+0.1;
+                        result.outPoint[1]=this.centers[1]-0.1;
                         break;
                 }
                 //消失的时间
-                result.time=this.centers.length*15;
+                result.time=this.centers.length*8;
             }
             return result;
         };
@@ -193,12 +229,12 @@ Gizmo=(function () {
                         result.outPoint[1]=this.centers[this.centers.length-1];
                         break;
                     case 1:
-                        result.stopLine[0]=this.centers[this.centers.length-2]-0.05;
-                        result.stopLine[1]=this.centers[this.centers.length-1]-0.05;
-                        result.stopLine[2]=this.centers[this.centers.length-2]+0.05;
-                        result.stopLine[3]=this.centers[this.centers.length-1]-0.05;
+                        result.stopLine[0]=this.centers[this.centers.length-2]+0.05;
+                        result.stopLine[1]=this.centers[this.centers.length-1]+0.05;
+                        result.stopLine[2]=this.centers[this.centers.length-2]-0.05;
+                        result.stopLine[3]=this.centers[this.centers.length-1]+0.05;
                         result.outPoint[0]=this.centers[this.centers.length-2];
-                        result.outPoint[1]=this.centers[this.centers.length-1]-0.1;
+                        result.outPoint[1]=this.centers[this.centers.length-1]+0.1;
                         break;
                     case 2:
                         result.stopLine[0]=this.centers[this.centers.length-2]+0.05;
@@ -209,16 +245,16 @@ Gizmo=(function () {
                         result.outPoint[1]=this.centers[this.centers.length-1];
                         break;
                     default:
-                        result.stopLine[0]=this.centers[this.centers.length-2]+0.05;
-                        result.stopLine[1]=this.centers[this.centers.length-1]+0.05;
-                        result.stopLine[2]=this.centers[this.centers.length-2]-0.05;
-                        result.stopLine[3]=this.centers[this.centers.length-1]+0.05;
+                        result.stopLine[0]=this.centers[this.centers.length-2]-0.05;
+                        result.stopLine[1]=this.centers[this.centers.length-1]-0.05;
+                        result.stopLine[2]=this.centers[this.centers.length-2]+0.05;
+                        result.stopLine[3]=this.centers[this.centers.length-1]-0.05;
                         result.outPoint[0]=this.centers[this.centers.length-2];
-                        result.outPoint[1]=this.centers[this.centers.length-1]+0.1;
+                        result.outPoint[1]=this.centers[this.centers.length-1]-0.1;
                         break;
                 }
                 //消失的时间
-                result.time=this.centers.length*15;
+                result.time=this.centers.length*8;
             }
             return result;
         };
@@ -454,7 +490,6 @@ Gizmo=(function () {
                 this.update(mousePosition);
             this.drawComponents(gl,gl.TRIANGLES,3);
         };
-
     };
 
     //绘制单个网格
@@ -583,6 +618,58 @@ Gizmo=(function () {
         this.compatibleBoxs=function (component,kind) {
             var result=true;
             switch (kind){
+                case 2:{//左挡板
+                    var tempCenter=[component.center[0]+0.05*component.size,component.center[1]-0.05*component.size];
+                    var centerX=Math.floor(10*(tempCenter[0]+0.01))+10;
+                    var centerY=Math.floor(10*(tempCenter[1]+0.01))+10;
+                    if(component.size%2===0){
+                        var leftBottomX=centerX-component.size/2;
+                        var leftBottomY=centerY-component.size/2;
+                        for(var i=0;i<component.size;i++){
+                            for(var j=0;j<component.size;j++){
+                                if(leftBottomX+i>19){
+                                    result=false;
+                                    break;
+                                }
+                                if(leftBottomY+j<0){
+                                    result=false;
+                                    break;
+                                }
+                                if(!this.gridBoxs[leftBottomX+i]){
+                                    result=false;
+                                    break;
+                                }
+                                if(this.gridBoxs[leftBottomX+i][leftBottomY+j]&&this.gridBoxs[leftBottomX+i][leftBottomY+j].length>2){
+                                    result=false;
+                                }
+                            }
+                        }
+                    }
+                    else{
+                        var leftBottomX=centerX-(component.size-1)/2;
+                        var leftBottomY=centerY-(component.size-1)/2;
+                        for(var i=0;i<component.size;i++){
+                            for(var j=0;j<component.size;j++){
+                                if(leftBottomX+i>19){
+                                    result=false;
+                                    break;
+                                }
+                                if(leftBottomY+j<0){
+                                    result=false;
+                                    break;
+                                }
+                                if(!this.gridBoxs[leftBottomX+i]){
+                                    result=false;
+                                    break;
+                                }
+                                if(this.gridBoxs[leftBottomX+i][leftBottomY+j]&&this.gridBoxs[leftBottomX+i][leftBottomY+j].length>2){
+                                    result=false;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
                 default: {
                     var centerX=Math.floor(10*(component.center[0]+0.01))+10;
                     var centerY=Math.floor(10*(component.center[1]+0.01))+10;
@@ -788,13 +875,25 @@ Gizmo=(function () {
                         }
                     }
                 }
-                if(this.playAreaComponents[playAreaComponent].rotateSpeed&&(this.playAreaComponents[playAreaComponent].rotateSpeed-0)!==0){
+                if(this.playAreaComponents[playAreaComponent]&&this.playAreaComponents[playAreaComponent].rotateSpeed&&(this.playAreaComponents[playAreaComponent].rotateSpeed-0)!==0){
                     this.playAreaComponents[playAreaComponent].angel=(this.playAreaComponents[playAreaComponent].angel-0)+(this.playAreaComponents[playAreaComponent].rotateSpeed-0);
-                    if(this.playAreaComponents[playAreaComponent].angel>180){
-                        this.playAreaComponents[playAreaComponent].angel=this.playAreaComponents[playAreaComponent].angel%180;
+                    //左挡板，顺时针旋转
+                    if(this.playAreaComponents[playAreaComponent] instanceof LeftBaffle){
+                        if(this.playAreaComponents[playAreaComponent].angel>90){
+                            this.playAreaComponents[playAreaComponent].angel=90;
+                            this.playAreaComponents[playAreaComponent].rotateSpeed=0.0;
+                        }
+                        if(this.playAreaComponents[playAreaComponent].angel<0){
+                            this.playAreaComponents[playAreaComponent].angel=0;
+                            this.playAreaComponents[playAreaComponent].rotateSpeed=0.0;
+                        }
+                    }
+                    else{
+                        if(this.playAreaComponents[playAreaComponent].angel>180){
+                            this.playAreaComponents[playAreaComponent].angel=this.playAreaComponents[playAreaComponent].angel%180;
+                        }
                     }
                 }
-                //判断当前是否和边界碰撞
                 physicsEngine.edgeCollision(this.playAreaComponents[playAreaComponent],collisionDocu);
                 physicsEngine.enterNextState(this.playAreaComponents[playAreaComponent],collisionDocu);
             }
@@ -807,6 +906,30 @@ Gizmo=(function () {
             this.mousePosition=[0.0,0.0];
             this.gl.clear(this.gl.COLOR_BUFFER_BIT);
             this.drawAll();
+        }
+        this.receiveKeyDown=function (keyID) {
+            switch (keyID){
+                case 87: {
+                    console.log('W');
+                    for(var component in this.playAreaComponents){
+                        if(this.playAreaComponents[component] instanceof  LeftBaffle){
+                            this.playAreaComponents[component].rotateSpeed=6.0;
+                        }
+                    }
+                    break;
+                }
+                case 83: {
+                    console.log('S');
+                    for(var component in this.playAreaComponents){
+                        if(this.playAreaComponents[component] instanceof  LeftBaffle){
+                            this.playAreaComponents[component].rotateSpeed=-6.0;
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
         }
     };
 
@@ -922,6 +1045,13 @@ Gizmo=(function () {
             };
         };
         this.enterNextState=function (component,collisionDocu) {
+            if(component instanceof Ball){
+                if(component.disappear!==0){
+                    console.log(component.center);
+                    console.log(component.disappear);
+                    return ;
+                }
+            }
             //如果碰撞超过两个物体
             if(collisionDocu.num>=1){
                 if(Math.max(Math.abs(component.speed[1]),Math.abs(component.speed[0]))-component.minSpeed<=0.001) {
@@ -1013,6 +1143,12 @@ Gizmo=(function () {
                     }
                     if(tempY<0&&tempY>-1.0)
                         component.speed[1]=-tempY+0.5;
+                }
+                else if(collisionDocu.kind==="Right"){
+                    component.speed[1]=-component.speed[1];
+                }
+                else if(collisionDocu.kind==="Bottom"){
+                    component.speed[0]=-component.speed[0];
                 }
                 else{
                     component.speed[0]=tempX*0.80;
@@ -1170,8 +1306,7 @@ Gizmo=(function () {
                                         console.log(collisionDocu.theta);
                                     }
                                     //判断是否被开始结点吸收
-                                    if(component.centers>2){
-                                        console.log(component.startPointInfo);
+                                    if(component.centers.length>2){
                                         var tempLine=component.startPointInfo.startLine;
                                         var absorbLine=new Vector(tempLine[0],tempLine[1],tempLine[2],tempLine[3]);
                                         if(absorbLine.vectorIsEqual(vectorSlop)){
@@ -1179,27 +1314,64 @@ Gizmo=(function () {
                                             oldBall.disappear=component.startPointInfo.time;
                                             oldBall.center[0]=tempStopState[0];
                                             oldBall.center[1]=tempStopState[1];
-                                            switch (tempStopState.direction){
+                                            var disappearSpeed=Math.sqrt(oldBall.speed[0]*oldBall.speed[0]+oldBall.speed[1]*oldBall.speed[1]);
+                                            switch (component.stopPointInfo.direction){
                                                 case 0:
-                                                    oldBall.speed[0]=-0.2;
+                                                    oldBall.speed[0]=-disappearSpeed;
+                                                    oldBall.speed[1]=0;
                                                     break;
                                                 case 1:
-                                                    oldBall.speed[1]=0.2;
+                                                    oldBall.speed[0]=0;
+                                                    oldBall.speed[1]=disappearSpeed;
                                                     break;
                                                 case 2:
-                                                    oldBall.speed[0]=0.2;
+                                                    oldBall.speed[0]=disappearSpeed;
+                                                    oldBall.speed[1]=0;
                                                     break;
                                                 default:
-                                                    oldBall.speed[1]=-0.2;
+                                                    oldBall.speed[0]=0;
+                                                    oldBall.speed[1]=-disappearSpeed;
                                                     break;
                                             }
+                                            return [];
+                                        }
+                                    }
+                                    //判断是否被结束结点吸收
+                                    if(component.centers.length>2){
+                                        var tempLine=component.stopPointInfo.stopLine;
+                                        var absorbLine=new Vector(tempLine[0],tempLine[1],tempLine[2],tempLine[3]);
+                                        if(absorbLine.vectorIsEqual(vectorSlop)){
+                                            var tempStopState=component.startPointInfo.outPoint;
+                                            oldBall.disappear=component.stopPointInfo.time;
+                                            oldBall.center[0]=tempStopState[0];
+                                            oldBall.center[1]=tempStopState[1];
+                                            var disappearSpeed=Math.sqrt(oldBall.speed[0]*oldBall.speed[0]+oldBall.speed[1]*oldBall.speed[1]);
+                                            switch (component.startPointInfo.direction){
+                                                case 0:
+                                                    oldBall.speed[0]=-disappearSpeed;
+                                                    oldBall.speed[1]=0;
+                                                    break;
+                                                case 1:
+                                                    oldBall.speed[0]=0;
+                                                    oldBall.speed[1]=disappearSpeed;
+                                                    break;
+                                                case 2:
+                                                    oldBall.speed[0]=disappearSpeed;
+                                                    oldBall.speed[1]=0;
+                                                    break;
+                                                default:
+                                                    oldBall.speed[0]=0;
+                                                    oldBall.speed[1]=-disappearSpeed;
+                                                    break;
+                                            }
+                                            return [];
                                         }
                                     }
                                 }
                                 else{
                                     collisionDocu.theta=vectorSlop.XDirtAngle();
                                 }
-                                if(component instanceof Baffle){
+                                if((component instanceof Baffle)||(component instanceof LeftBaffle)){
                                     collisionDocu.theta=[Math.sin(component.angel),Math.cos(component.angel)];
                                 }
                                 //如果是逆时针旋转的挡板
@@ -1221,6 +1393,14 @@ Gizmo=(function () {
                                         }
                                     }
                                 }
+                                if(component instanceof LeftBaffle){
+                                    if(component.rotateSpeed!==0)
+                                        collisionDocu.kind="acceRightBottom";
+                                    if(component.rotateSpeed===0&&component.angel===0)
+                                        collisionDocu.kind="Bottom";
+                                    if(component.rotateSpeed===0&&component.angel===90)
+                                        collisionDocu.kind="Right";
+                                }
                             }
                             if(Math.abs(component.rotateSpeed)<0.001)
                                 collisionDocu.num=collisionNum+1;
@@ -1228,7 +1408,7 @@ Gizmo=(function () {
 
                     }
                 }
-                if((!(component instanceof Circle))&&(!(component instanceof Baffle))){
+                if((!(component instanceof Circle))&&(!(component instanceof Baffle))&&(!(component instanceof LeftBaffle))){
                     //判断物体各个顶点是否发生碰撞，优先级别高于边碰撞（因为小球运动轨迹很可能是抛物线）
                     var vertexVertor=new Vector();
                     if(vertexVertor.distBetween(ball.center[0],ball.center[1],vertex1X,vertex1Y)-ball.size*0.1*ball.scaleSize/200<0.001){
@@ -1312,9 +1492,71 @@ Gizmo=(function () {
                                         collisionDocu.theta=vectorSlop.XDirtAngle();
                                         console.log(collisionDocu.theta);
                                     }
+                                    //判断是否被开始结点吸收
+                                    if(component.centers.length>2){
+                                        console.log(component.startPointInfo);
+                                        var tempLine=component.startPointInfo.startLine;
+                                        var absorbLine=new Vector(tempLine[0],tempLine[1],tempLine[2],tempLine[3]);
+                                        if(absorbLine.vectorIsEqual(vectorSlop)){
+                                            var tempStopState=component.stopPointInfo.outPoint;
+                                            oldBall.disappear=component.startPointInfo.time;
+                                            oldBall.center[0]=tempStopState[0];
+                                            oldBall.center[1]=tempStopState[1];
+                                            var disappearSpeed=Math.sqrt(oldBall.speed[0]*oldBall.speed[0]+oldBall.speed[1]*oldBall.speed[1]);
+                                            switch (component.stopPointInfo.direction){
+                                                case 0:
+                                                    oldBall.speed[0]=-disappearSpeed;
+                                                    oldBall.speed[1]=0;
+                                                    break;
+                                                case 1:
+                                                    oldBall.speed[0]=0;
+                                                    oldBall.speed[1]=disappearSpeed;
+                                                    break;
+                                                case 2:
+                                                    oldBall.speed[0]=disappearSpeed;
+                                                    oldBall.speed[1]=0;
+                                                    break;
+                                                default:
+                                                    oldBall.speed[0]=0;
+                                                    oldBall.speed[1]=-disappearSpeed;
+                                                    break;
+                                            }
+                                            return [];
+                                        }
+                                    }
+                                    if(component.centers.length>2){
+                                        var tempLine=component.stopPointInfo.stopLine;
+                                        var absorbLine=new Vector(tempLine[0],tempLine[1],tempLine[2],tempLine[3]);
+                                        if(absorbLine.vectorIsEqual(vectorSlop)){
+                                            var tempStopState=component.startPointInfo.outPoint;
+                                            oldBall.disappear=component.stopPointInfo.time;
+                                            oldBall.center[0]=tempStopState[0];
+                                            oldBall.center[1]=tempStopState[1];
+                                            var disappearSpeed=Math.sqrt(oldBall.speed[0]*oldBall.speed[0]+oldBall.speed[1]*oldBall.speed[1]);
+                                            switch (component.startPointInfo.direction){
+                                                case 0:
+                                                    oldBall.speed[0]=-disappearSpeed;
+                                                    oldBall.speed[1]=0;
+                                                    break;
+                                                case 1:
+                                                    oldBall.speed[0]=0;
+                                                    oldBall.speed[1]=disappearSpeed;
+                                                    break;
+                                                case 2:
+                                                    oldBall.speed[0]=disappearSpeed;
+                                                    oldBall.speed[1]=0;
+                                                    break;
+                                                default:
+                                                    oldBall.speed[0]=0;
+                                                    oldBall.speed[1]=-disappearSpeed;
+                                                    break;
+                                            }
+                                            return [];
+                                        }
+                                    }
                                 }
                             }
-                            if (component instanceof Baffle) {
+                            if((component instanceof Baffle)||(component instanceof LeftBaffle)){
                                 collisionDocu.theta = [Math.sin(component.angel), Math.cos(component.angel)];
                             }
                             //如果是逆时针旋转的挡板
@@ -1335,6 +1577,14 @@ Gizmo=(function () {
                                         collisionDocu.kind="acceRightUpper";
                                     }
                                 }
+                            }
+                            if(component instanceof LeftBaffle){
+                                if(component.rotateSpeed!==0)
+                                    collisionDocu.kind="acceRightBottom";
+                                if(component.rotateSpeed===0&&component.angel===0)
+                                    collisionDocu.kind="Bottom";
+                                if(component.rotateSpeed===0&&component.angel===90)
+                                    collisionDocu.kind="Right";
                             }
                             if (Math.abs(component.rotateSpeed) < 0.001)
                                 collisionDocu.num = collisionNum + 1;
@@ -1358,6 +1608,7 @@ Gizmo=(function () {
         Vector:Vector,
         Baffle:Baffle,
         Absorber: Absorber,
-        Track: Track
+        Track: Track,
+        LeftBaffle:LeftBaffle
     }
 })();
