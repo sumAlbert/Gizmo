@@ -44,6 +44,7 @@ Gizmo=(function () {
         this.draw=function (gl,mousePosition) {
             this.drawComponents(gl,gl.TRIANGLES,this.verticesArray.length/2);
         };
+        //根据当前中心获取centers
         this.updateCenters=function () {
             if(this.centers.length===0){
                 this.centers.push(this.center[0],this.center[1]);
@@ -101,6 +102,12 @@ Gizmo=(function () {
             }
             return false;
         };
+        this.getStartInfo=function () {
+            var result={direction:0,startLine:[],time:0};
+            if(this.centers.length>=2){
+                if(this.centers[])
+            }
+        }
     };
 
     this.Absorber=function () {
@@ -243,6 +250,7 @@ Gizmo=(function () {
         this.extraAcce=[0.0,0.0];
         this.physicsAttr=true;
         this.minSpeed=0.2;
+        this.disappear=0;
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -260,7 +268,12 @@ Gizmo=(function () {
         this.draw=function (gl,mousePosition) {
             if(!this.fixFlag)
                 this.update(mousePosition);
-            this.drawComponents(gl,gl.TRIANGLE_FAN,this.verticesArray.length/2);
+            if(this.disappear===0){
+                this.drawComponents(gl,gl.TRIANGLE_FAN,this.verticesArray.length/2);
+            }
+            else{
+                this.disappear=this.disappear-1;
+            }
         };
         this.vertexsByCenter=function () {
             this.verticesArray=[];
