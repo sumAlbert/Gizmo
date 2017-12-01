@@ -15,6 +15,88 @@ Gizmo=(function () {
                         '}\n'
     }];//测试用
 
+    this.Track=function () {
+        this.inherit = GameComponents;
+        this.inherit();
+        delete this.inherit;
+
+        this.id="Track"+this.randomPostfix();
+        this.size=1;
+        this.fixFlag=false;
+        this.startFlag=false;
+        this.centers=[];
+        this.physicsAttr=true;
+        this.update=function (mousePosition) {
+            this.verticesArray=[];
+            var leftUpperX=Math.floor(10*mousePosition[0])/10;
+            var leftUpperY=Math.floor(10*mousePosition[1])/10+0.1;
+            this.center=[leftUpperX+0.05*this.size,leftUpperY-0.05*this.size];
+            this.vertexsByCenter();
+        };
+        this.draw=function (gl,mousePosition) {
+            if(!this.fixFlag)
+                this.update(mousePosition);
+            this.drawComponents(gl,gl.TRIANGLES,this.verticesArray.length/2);
+        };
+        this.updateCenters=function () {
+            if(this.centers.length===0){
+                this.centers.push(this.center[0],this.center[1]);
+            }
+            else{
+                var lastCentersX=this.centers[this.centers.length-2];
+                var lastCentersY=this.centers[this.centers.length-1];
+                while (Math.abs(this.center[0]-lastCentersX)>0.001){
+                    if(this.center[0]<lastCentersX){
+                        lastCentersX=lastCentersX-0.1;
+                    }
+                    else{
+                        lastCentersX=lastCentersX+0.1;
+                    }
+                    if(!this.againCenter(lastCentersX,lastCentersY)){
+                        this.centers.push(lastCentersX,lastCentersY);
+                    }
+                }
+                while (Math.abs(this.center[1]-lastCentersY)>0.001){
+                    if(this.center[1]<lastCentersY){
+                        lastCentersY=lastCentersY-0.1;
+                    }
+                    else{
+                        lastCentersY=lastCentersY+0.1;
+                    }
+                    if(!this.againCenter(lastCentersX,lastCentersY)){
+                        this.centers.push(lastCentersX,lastCentersY);
+                    }
+                }
+            }
+        };
+        this.vertexsByCenter=function () {
+            this.verticesArray=[];
+            for(var i=0;i<this.centers.length;i=i+2){
+                var tempCenterX=this.centers[i];
+                var tempCenterY=this.centers[i+1];
+                //左上角
+                this.verticesArray.push(tempCenterX-0.05*this.size,tempCenterY+0.05*this.size);
+                this.verticesArray.push(tempCenterX-0.05*this.size,tempCenterY-0.05*this.size);
+                this.verticesArray.push(tempCenterX+0.05*this.size,tempCenterY+0.05*this.size);
+                //右下角
+                this.verticesArray.push(tempCenterX+0.05*this.size,tempCenterY+0.05*this.size);
+                this.verticesArray.push(tempCenterX-0.05*this.size,tempCenterY-0.05*this.size);
+                this.verticesArray.push(tempCenterX+0.05*this.size,tempCenterY-0.05*this.size);
+            }
+        };
+        this.againCenter=function (distX,distY) {
+            for(var i=0;i<this.centers.length;i=i+2){
+                if(Math.abs(distX-this.centers[i])<0.0001&&Math.abs(distY-this.centers[i+1])<0.0001){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            return false;
+        }
+    };
+
     this.Absorber=function () {
         this.inherit = GameComponents;
         this.inherit();
@@ -70,6 +152,7 @@ Gizmo=(function () {
             }
             console.log(this.centers);
         };
+        //根据新获得的中心，获得周围点的坐标
         this.vertexsByCenter=function () {
             this.verticesArray=[];
             for(var i=0;i<this.centers.length;i=i+2){
@@ -85,6 +168,7 @@ Gizmo=(function () {
                 this.verticesArray.push(tempCenterX+0.05*this.size,tempCenterY-0.05*this.size);
             }
         };
+        //是否有重复的中心
         this.againCenter=function (distX,distY) {
             for(var i=0;i<this.centers.length;i=i+2){
                 if(Math.abs(distX-this.centers[i])<0.0001&&Math.abs(distY-this.centers[i+1])<0.0001){
@@ -1060,6 +1144,7 @@ Gizmo=(function () {
         PhysicsEngine:PhysicsEngine,
         Vector:Vector,
         Baffle:Baffle,
-        Absorber: Absorber
+        Absorber: Absorber,
+        Track: Track
     }
 })();

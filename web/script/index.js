@@ -149,10 +149,22 @@ function main2() {
                     gameGridBox.gridBoxSize=[absorber.size,absorber.size];
                     break;
                 }
+                case 6:{
+                    var track= new Gizmo.Track();
+                    track.center=[0.0,0.0];
+                    console.log("init");
+                    if(!isNaN(document.getElementById("tool-item6-size").value)){
+                        track.size=document.getElementById("tool-item6-size").value;
+                    }
+                    playArea.playAreaComponents.push(track);
+                    gameGridBox.gridBoxSize=[track.size,track.size];
+                    break;
+                }
                 default:
                     break;
             }
             canvas.onmousemove = function (ev) {
+                //获取鼠标在游戏网格中的位置
                 gameGrid.gridBox.color=gameGrid.GREEN;
                 var x=ev.clientX;
                 var y=ev.clientY;
@@ -160,7 +172,7 @@ function main2() {
                 x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
                 y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
                 playArea.mousePosition=[x,y];
-
+                //更新物体的center和检查是否重叠
                 switch (game.state){
                     case 1: {
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
@@ -226,6 +238,21 @@ function main2() {
                             break;
                         }
                     }
+                    case 6: {
+                        if(playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag){
+                            playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                            if(gameGrid.compatibleBoxs(track,1)){
+                                gameGridBox.color=gameGrid.GREEN;
+                                outEventIsOk=true;
+                                playArea.playAreaComponents[playArea.playAreaComponents.length - 1].updateCenters()
+                            }
+                            else{
+                                gameGridBox.color=gameGrid.RED;
+                                outEventIsOk=false;
+                            }
+                            break;
+                        }
+                    }
                     default:
                         break;
                 }
@@ -276,6 +303,10 @@ function main2() {
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=true;
                         break;
                     }
+                    case 6:{
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=true;
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -287,6 +318,15 @@ function main2() {
                         outEventIsOk=false;
                         game.state=0;
                         gameGrid.fillGridBoxs(absorber,2);
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=false;
+                    }
+                }
+                if(game.state===6){
+                    if(outEventIsOk){
+                        track.fixFlag=true;
+                        outEventIsOk=false;
+                        game.state=0;
+                        gameGrid.fillGridBoxs(track,2);
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=false;
                     }
                 }
@@ -303,6 +343,8 @@ function main2() {
                 if(game.state===4)
                     playArea.playAreaComponents.pop();
                 if(game.state===5)
+                    playArea.playAreaComponents.pop();
+                if(game.state===6)
                     playArea.playAreaComponents.pop();
                 playArea.drawAll();
                 canvas.onmousemove=null;
@@ -337,6 +379,12 @@ function main2() {
     document.getElementById("tool-item5").addEventListener("click",function () {
         if(game.state!==5){
             game.state=5;
+        }
+    });
+    //新建轨道
+    document.getElementById("tool-item6").addEventListener("click",function () {
+        if(game.state!==6){
+            game.state=6;
         }
     });
     //运行
