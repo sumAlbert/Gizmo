@@ -26,6 +26,8 @@ Gizmo=(function () {
         this.startFlag=false;
         this.centers=[];
         this.physicsAttr=true;
+        this.startPointInfo={};
+        this.stopPointInfo={};
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -33,6 +35,12 @@ Gizmo=(function () {
             this.center=[leftUpperX+0.05*this.size,leftUpperY-0.05*this.size];
             if(arguments[1]){
                 this.updateCenters();
+                if(this.centers.length>=4){
+                    this.startPointInfo=this.getStartInfo();
+                    this.stopPointInfo=this.getStopInfo();
+                    console.log(this.startPointInfo);
+                    console.log(this.stopPointInfo);
+                }
             }
             else{
                 this.center=[];
@@ -103,11 +111,117 @@ Gizmo=(function () {
             return false;
         };
         this.getStartInfo=function () {
-            var result={direction:0,startLine:[],time:0};
-            if(this.centers.length>=2){
-                if(this.centers[])
+            var result={direction:0,startLine:[],time:0,outPoint:[]};
+            if(this.centers.length>=4){
+                //获取进入点的方向
+                if(Math.abs(this.centers[2]-this.centers[0]-0.1)<0.001){//右边0
+                    result.direction=0
+                }
+                else if(Math.abs(this.centers[2]-this.centers[0]+0.1)<0.001){//左边2
+                    result.direction=2;
+                }
+                else if(Math.abs(this.centers[3]-this.centers[1]+0.1)<0.001){//下边1
+                    result.direction=1;
+                }
+                else{//上边3
+                    result.direction=3;
+                }
+                //获取进入点的线段
+                switch (result.direction){
+                    case 0:
+                        result.startLine[0]=this.centers[0]-0.05;
+                        result.startLine[1]=this.centers[1]+0.05;
+                        result.startLine[2]=this.centers[0]-0.05;
+                        result.startLine[3]=this.centers[1]-0.05;
+                        result.outPoint[0]=this.centers[0]-0.1;
+                        result.outPoint[1]=this.centers[1];
+                        break;
+                    case 1:
+                        result.startLine[0]=this.centers[0]-0.05;
+                        result.startLine[1]=this.centers[1]-0.05;
+                        result.startLine[2]=this.centers[0]+0.05;
+                        result.startLine[3]=this.centers[1]-0.05;
+                        result.outPoint[0]=this.centers[0];
+                        result.outPoint[1]=this.centers[1]-0.1;
+                        break;
+                    case 2:
+                        result.startLine[0]=this.centers[0]+0.05;
+                        result.startLine[1]=this.centers[1]-0.05;
+                        result.startLine[2]=this.centers[0]+0.05;
+                        result.startLine[3]=this.centers[1]+0.05;
+                        result.outPoint[0]=this.centers[0]+0.1;
+                        result.outPoint[1]=this.centers[1];
+                        break;
+                    default:
+                        result.startLine[0]=this.centers[0]+0.05;
+                        result.startLine[1]=this.centers[1]+0.05;
+                        result.startLine[2]=this.centers[0]-0.05;
+                        result.startLine[3]=this.centers[1]+0.05;
+                        result.outPoint[0]=this.centers[0];
+                        result.outPoint[1]=this.centers[1]+0.1;
+                        break;
+                }
+                //消失的时间
+                result.time=this.centers.length*15;
             }
-        }
+            return result;
+        };
+        this.getStopInfo=function () {
+            var result={direction:0,stopLine:[],time:0,outPoint:[]};
+            if(this.centers.length>=4){
+                //获取进入点的方向
+                if(Math.abs(this.centers[this.centers.length-2]-this.centers[this.centers.length-4]-0.1)<0.001){//左边2
+                    result.direction=2;
+                }
+                else if(Math.abs(this.centers[this.centers.length-2]-this.centers[this.centers.length-4]+0.1)<0.001){//右边0
+                    result.direction=0;
+                }
+                else if(Math.abs(this.centers[this.centers.length-1]-this.centers[this.centers.length-3]+0.1)<0.001){//上边3
+                    result.direction=3;
+                }
+                else{//下边
+                    result.direction=1;
+                }
+                //获取进入点的线段和出去的点出现的位置
+                switch (result.direction){
+                    case 0:
+                        result.stopLine[0]=this.centers[this.centers.length-2]-0.05;
+                        result.stopLine[1]=this.centers[this.centers.length-1]+0.05;
+                        result.stopLine[2]=this.centers[this.centers.length-2]-0.05;
+                        result.stopLine[3]=this.centers[this.centers.length-1]-0.05;
+                        result.outPoint[0]=this.centers[this.centers.length-2]-0.1;
+                        result.outPoint[1]=this.centers[this.centers.length-1];
+                        break;
+                    case 1:
+                        result.stopLine[0]=this.centers[this.centers.length-2]-0.05;
+                        result.stopLine[1]=this.centers[this.centers.length-1]-0.05;
+                        result.stopLine[2]=this.centers[this.centers.length-2]+0.05;
+                        result.stopLine[3]=this.centers[this.centers.length-1]-0.05;
+                        result.outPoint[0]=this.centers[this.centers.length-2];
+                        result.outPoint[1]=this.centers[this.centers.length-1]-0.1;
+                        break;
+                    case 2:
+                        result.stopLine[0]=this.centers[this.centers.length-2]+0.05;
+                        result.stopLine[1]=this.centers[this.centers.length-1]-0.05;
+                        result.stopLine[2]=this.centers[this.centers.length-2]+0.05;
+                        result.stopLine[3]=this.centers[this.centers.length-1]+0.05;
+                        result.outPoint[0]=this.centers[this.centers.length-2]+0.1;
+                        result.outPoint[1]=this.centers[this.centers.length-1];
+                        break;
+                    default:
+                        result.stopLine[0]=this.centers[this.centers.length-2]+0.05;
+                        result.stopLine[1]=this.centers[this.centers.length-1]+0.05;
+                        result.stopLine[2]=this.centers[this.centers.length-2]-0.05;
+                        result.stopLine[3]=this.centers[this.centers.length-1]+0.05;
+                        result.outPoint[0]=this.centers[this.centers.length-2];
+                        result.outPoint[1]=this.centers[this.centers.length-1]+0.1;
+                        break;
+                }
+                //消失的时间
+                result.time=this.centers.length*15;
+            }
+            return result;
+        };
     };
 
     this.Absorber=function () {
@@ -767,6 +881,20 @@ Gizmo=(function () {
         this.mult=function(a,b,c) {
             return (a[0]-c[0])*(b[1]-c[1])-(b[0]-c[0])*(a[1]-c[1]);
         }//叉积
+        this.vectorIsEqual=function (vector) {
+            var result=false;
+            if(Math.abs(vector.startX-this.startX)<0.00001&&Math.abs(vector.startY-this.startY)<0.00001){
+                if(Math.abs(vector.stopX-this.stopX)<0.00001&&Math.abs(vector.stopY-this.stopY)<0.00001){
+                    result=true;
+                }
+            }
+            if(Math.abs(vector.startX-this.stopX)<0.00001&&Math.abs(vector.startY-this.stopY)<0.00001){
+                if(Math.abs(vector.stopX-this.startX)<0.00001&&Math.abs(vector.stopY-this.startY)<0.00001){
+                    result=true;
+                }
+            }
+            return result;
+        }
     };
 
     this.PhysicsEngine=function () {
@@ -969,6 +1097,10 @@ Gizmo=(function () {
             if(oldBall.speed[0]===0.0&&oldBall.speed[1]===0.0&&oldBall.acceleration[1]===0.0&&oldBall.acceleration[0]===0.0){
                 return [];
             }
+            //如果小球进入轨道不做碰撞判断
+            if(oldBall.disappear!==0){
+                return [];
+            }
             var collisionNum=collisionDocu.num;
             var collisionTheta=collisionDocu.theta;
             //碰撞检测
@@ -1029,12 +1161,39 @@ Gizmo=(function () {
                                 else{
                                     var vectorSlop=new Vector(vertex2X,vertex2Y,vertex1X,vertex1Y);
                                 }
+                                //轨道的时候
                                 if(component instanceof Track){
                                     var tempTheta=vectorSlop.XDirtAngle();
                                     //如果是0/90/180/270才设置
                                     if((1-Math.abs(tempTheta[0]))<0.001||(1-Math.abs(tempTheta[1]))<0.001){
                                         collisionDocu.theta=vectorSlop.XDirtAngle();
                                         console.log(collisionDocu.theta);
+                                    }
+                                    //判断是否被开始结点吸收
+                                    if(component.centers>2){
+                                        console.log(component.startPointInfo);
+                                        var tempLine=component.startPointInfo.startLine;
+                                        var absorbLine=new Vector(tempLine[0],tempLine[1],tempLine[2],tempLine[3]);
+                                        if(absorbLine.vectorIsEqual(vectorSlop)){
+                                            var tempStopState=component.stopPointInfo.outPoint;
+                                            oldBall.disappear=component.startPointInfo.time;
+                                            oldBall.center[0]=tempStopState[0];
+                                            oldBall.center[1]=tempStopState[1];
+                                            switch (tempStopState.direction){
+                                                case 0:
+                                                    oldBall.speed[0]=-0.2;
+                                                    break;
+                                                case 1:
+                                                    oldBall.speed[1]=0.2;
+                                                    break;
+                                                case 2:
+                                                    oldBall.speed[0]=0.2;
+                                                    break;
+                                                default:
+                                                    oldBall.speed[1]=-0.2;
+                                                    break;
+                                            }
+                                        }
                                     }
                                 }
                                 else{
