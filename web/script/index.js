@@ -268,6 +268,7 @@ function main2() {
                         }
                     }
                     case 7: {
+
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
                         if(gameGrid.compatibleBoxs(leftBaffle,2)){
                             gameGridBox.color=gameGrid.GREEN;
