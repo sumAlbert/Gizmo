@@ -51,6 +51,42 @@ Gizmo=(function () {
         }
     };
 
+    this.RightBaffle=function () {
+        this.inherit = GameComponents;
+        this.inherit();
+        delete this.inherit;
+
+        this.id="RightBaffle"+this.randomPostfix();
+        this.size=1;
+        this.fixFlag=false;
+        this.physicsAttr=true;
+        this.rotateSpeed=0.0;//旋转速度
+        this.update=function (mousePosition) {
+            this.verticesArray=[];
+            var leftUpperX=Math.floor(10*mousePosition[0])/10;
+            var leftUpperY=Math.floor(10*mousePosition[1])/10+0.1;
+            this.center=[leftUpperX+0.1*this.size,leftUpperY];
+            this.verticesArray.push(this.center[0]-0.01,this.center[1]);
+            this.verticesArray.push(this.center[0]-0.01,this.center[1]-0.1*this.size);
+            this.verticesArray.push(this.center[0]+0.01,this.center[1]-0.1*this.size);
+            this.verticesArray.push(this.center[0]+0.01,this.center[1]);
+            this.rotateAngle();
+        };
+        this.draw=function (gl,mousePosition) {
+            if(!this.fixFlag)
+                this.update(mousePosition);
+            this.drawComponents(gl,gl.TRIANGLE_FAN,4);
+        };
+        this.vertexsByCenter=function () {
+            this.verticesArray=[];
+            this.verticesArray.push(this.center[0]-0.01,this.center[1]);
+            this.verticesArray.push(this.center[0]-0.01,this.center[1]-0.1*this.size);
+            this.verticesArray.push(this.center[0]+0.01,this.center[1]-0.1*this.size);
+            this.verticesArray.push(this.center[0]+0.01,this.center[1]);
+            this.rotateAngle();
+        }
+    };
+
     this.Track=function () {
         this.inherit = GameComponents;
         this.inherit();
@@ -888,6 +924,16 @@ Gizmo=(function () {
                             this.playAreaComponents[playAreaComponent].rotateSpeed=0.0;
                         }
                     }
+                    if(this.playAreaComponents[playAreaComponent] instanceof RightBaffle){
+                        if(this.playAreaComponents[playAreaComponent].angel<-90){
+                            this.playAreaComponents[playAreaComponent].angel=-90;
+                            this.playAreaComponents[playAreaComponent].rotateSpeed=0.0;
+                        }
+                        if(this.playAreaComponents[playAreaComponent].angel>0){
+                            this.playAreaComponents[playAreaComponent].angel=0;
+                            this.playAreaComponents[playAreaComponent].rotateSpeed=0.0;
+                        }
+                    }
                     else{
                         if(this.playAreaComponents[playAreaComponent].angel>180){
                             this.playAreaComponents[playAreaComponent].angel=this.playAreaComponents[playAreaComponent].angel%180;
@@ -923,6 +969,24 @@ Gizmo=(function () {
                     for(var component in this.playAreaComponents){
                         if(this.playAreaComponents[component] instanceof  LeftBaffle){
                             this.playAreaComponents[component].rotateSpeed=-6.0;
+                        }
+                    }
+                    break;
+                }
+                case 38: {
+                    console.log('上');
+                    for(var component in this.playAreaComponents){
+                        if(this.playAreaComponents[component] instanceof  RightBaffle){
+                            this.playAreaComponents[component].rotateSpeed=-6.0;
+                        }
+                    }
+                    break;
+                }
+                case 40: {
+                    console.log('下');
+                    for(var component in this.playAreaComponents){
+                        if(this.playAreaComponents[component] instanceof  RightBaffle){
+                            this.playAreaComponents[component].rotateSpeed=6.0;
                         }
                     }
                     break;
@@ -1145,6 +1209,9 @@ Gizmo=(function () {
                         component.speed[1]=-tempY+0.5;
                 }
                 else if(collisionDocu.kind==="Right"){
+                    component.speed[1]=-component.speed[1];
+                }
+                else if(collisionDocu.kind==="Left"){
                     component.speed[1]=-component.speed[1];
                 }
                 else if(collisionDocu.kind==="Bottom"){
@@ -1371,7 +1438,8 @@ Gizmo=(function () {
                                 else{
                                     collisionDocu.theta=vectorSlop.XDirtAngle();
                                 }
-                                if((component instanceof Baffle)||(component instanceof LeftBaffle)){
+                                //如果是挡板和左右轨道
+                                if((component instanceof Baffle)||(component instanceof LeftBaffle)||(component instanceof RightBaffle)){
                                     collisionDocu.theta=[Math.sin(component.angel),Math.cos(component.angel)];
                                 }
                                 //如果是逆时针旋转的挡板
@@ -1401,6 +1469,14 @@ Gizmo=(function () {
                                     if(component.rotateSpeed===0&&component.angel===90)
                                         collisionDocu.kind="Right";
                                 }
+                                if(component instanceof RightBaffle){
+                                    if(component.rotateSpeed!==0)
+                                        collisionDocu.kind="acceLeftUpper";
+                                    if(component.rotateSpeed===0&&component.angel===0)
+                                        collisionDocu.kind="Bottom";
+                                    if(component.rotateSpeed===0&&component.angel===-90)
+                                        collisionDocu.kind="Left";
+                                }
                             }
                             if(Math.abs(component.rotateSpeed)<0.001)
                                 collisionDocu.num=collisionNum+1;
@@ -1408,7 +1484,7 @@ Gizmo=(function () {
 
                     }
                 }
-                if((!(component instanceof Circle))&&(!(component instanceof Baffle))&&(!(component instanceof LeftBaffle))){
+                if((!(component instanceof Circle))&&(!(component instanceof Baffle))&&(!(component instanceof LeftBaffle))&&(!(component instanceof RightBaffle))){
                     //判断物体各个顶点是否发生碰撞，优先级别高于边碰撞（因为小球运动轨迹很可能是抛物线）
                     var vertexVertor=new Vector();
                     if(vertexVertor.distBetween(ball.center[0],ball.center[1],vertex1X,vertex1Y)-ball.size*0.1*ball.scaleSize/200<0.001){
@@ -1586,6 +1662,14 @@ Gizmo=(function () {
                                 if(component.rotateSpeed===0&&component.angel===90)
                                     collisionDocu.kind="Right";
                             }
+                            if(component instanceof RightBaffle){
+                                if(component.rotateSpeed!==0)
+                                    collisionDocu.kind="acceLeftUpper";
+                                if(component.rotateSpeed===0&&component.angel===0)
+                                    collisionDocu.kind="Bottom";
+                                if(component.rotateSpeed===0&&component.angel===-90)
+                                    collisionDocu.kind="Left";
+                            }
                             if (Math.abs(component.rotateSpeed) < 0.001)
                                 collisionDocu.num = collisionNum + 1;
                         }
@@ -1609,6 +1693,7 @@ Gizmo=(function () {
         Baffle:Baffle,
         Absorber: Absorber,
         Track: Track,
-        LeftBaffle:LeftBaffle
+        LeftBaffle:LeftBaffle,
+        RightBaffle:RightBaffle
     }
 })();

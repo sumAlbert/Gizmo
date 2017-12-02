@@ -170,6 +170,16 @@ function main2() {
                     gameGridBox.gridBoxSize=[leftBaffle.size,leftBaffle.size];
                     break;
                 }
+                case 8:{
+                    var rightBaffle=new Gizmo.RightBaffle();
+                    rightBaffle.update([0.0,0.0]);
+                    if(!isNaN(document.getElementById("tool-item8-size").value)){
+                        rightBaffle.size=document.getElementById("tool-item8-size").value;
+                    }
+                    playArea.playAreaComponents.push(rightBaffle);
+                    gameGridBox.gridBoxSize=[rightBaffle.size,rightBaffle.size];
+                    break;
+                }
                 default:
                     break;
             }
@@ -268,9 +278,20 @@ function main2() {
                         }
                     }
                     case 7: {
-
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
                         if(gameGrid.compatibleBoxs(leftBaffle,2)){
+                            gameGridBox.color=gameGrid.GREEN;
+                            clickEventIsOk=true;
+                        }
+                        else{
+                            gameGridBox.color=gameGrid.RED;
+                            clickEventIsOk=false;
+                        }
+                        break;
+                    }
+                    case 8: {
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                        if(gameGrid.compatibleBoxs(rightBaffle,2)){
                             gameGridBox.color=gameGrid.GREEN;
                             clickEventIsOk=true;
                         }
@@ -344,6 +365,16 @@ function main2() {
                         }
                         break;
                     }
+                    case 8:{
+                        if(clickEventIsOk){
+                            rightBaffle.fixFlag=true;
+                            clickEventIsOk=false;
+                            game.state=0;
+                            gameGrid.fillGridBoxs(rightBaffle,1);
+                            canvas.onmousedown = null;
+                        }
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -384,6 +415,8 @@ function main2() {
                 if(game.state===6)
                     playArea.playAreaComponents.pop();
                 if(game.state===7)
+                    playArea.playAreaComponents.pop();
+                if(game.state===8)
                     playArea.playAreaComponents.pop();
                 playArea.drawAll();
                 canvas.onmousemove=null;
@@ -430,6 +463,12 @@ function main2() {
     document.getElementById("tool-item7").addEventListener("click",function () {
         if(game.state!==7){
             game.state=7;
+        }
+    });
+    //新建逆时针旋转挡板
+    document.getElementById("tool-item8").addEventListener("click",function () {
+        if(game.state!==8){
+            game.state=8;
         }
     });
     //运行
