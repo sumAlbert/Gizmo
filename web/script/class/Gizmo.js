@@ -654,6 +654,57 @@ Gizmo=(function () {
         this.compatibleBoxs=function (component,kind) {
             var result=true;
             switch (kind){
+                case 1:{
+                    var centerX=Math.floor(10*(component.center[0]+0.01))+10;
+                    var centerY=Math.floor(10*(component.center[1]+0.01))+10;
+                    if(component.size%2===0){
+                        var leftBottomX=centerX-component.size/2;
+                        var leftBottomY=centerY-component.size/2;
+                        for(var i=0;i<component.size;i++){
+                            for(var j=0;j<component.size;j++){
+                                if(leftBottomX+i>19){
+                                    result=false;
+                                    break;
+                                }
+                                if(leftBottomY+j<0){
+                                    result=false;
+                                    break;
+                                }
+                                if(!this.gridBoxs[leftBottomX+i]){
+                                    result=false;
+                                    break;
+                                }
+                                if(this.gridBoxs[leftBottomX+i][leftBottomY+j]&&this.gridBoxs[leftBottomX+i][leftBottomY+j].length>2){
+                                    result=false;
+                                }
+                            }
+                        }
+                    }
+                    else{
+                        var leftBottomX=centerX-(component.size-1)/2;
+                        var leftBottomY=centerY-(component.size-1)/2;
+                        for(var i=0;i<component.size;i++){
+                            for(var j=0;j<component.size;j++){
+                                if(leftBottomX+i>19){
+                                    result=false;
+                                    break;
+                                }
+                                if(leftBottomY+j<0){
+                                    result=false;
+                                    break;
+                                }
+                                if(!this.gridBoxs[leftBottomX+i]){
+                                    result=false;
+                                    break;
+                                }
+                                if(this.gridBoxs[leftBottomX+i][leftBottomY+j]&&this.gridBoxs[leftBottomX+i][leftBottomY+j].length>2){
+                                    result=false;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
                 case 2:{//左挡板
                     var tempCenter=[component.center[0]+0.05*component.size,component.center[1]-0.05*component.size];
                     var centerX=Math.floor(10*(tempCenter[0]+0.01))+10;
@@ -706,9 +757,10 @@ Gizmo=(function () {
                     }
                     break;
                 }
-                default: {
-                    var centerX=Math.floor(10*(component.center[0]+0.01))+10;
-                    var centerY=Math.floor(10*(component.center[1]+0.01))+10;
+                case 3:{//右挡板
+                    var tempCenter=[component.center[0]-0.05*component.size,component.center[1]-0.05*component.size];
+                    var centerX=Math.floor(10*(tempCenter[0]+0.01))+10;
+                    var centerY=Math.floor(10*(tempCenter[1]+0.01))+10;
                     if(component.size%2===0){
                         var leftBottomX=centerX-component.size/2;
                         var leftBottomY=centerY-component.size/2;
@@ -757,6 +809,8 @@ Gizmo=(function () {
                     }
                     break;
                 }
+                default:
+                    break;
             }
             return result;
         };
@@ -1438,26 +1492,40 @@ Gizmo=(function () {
                                 else{
                                     collisionDocu.theta=vectorSlop.XDirtAngle();
                                 }
-                                //如果是挡板和左右轨道
+                                //如果是挡板和左右挡板,并且判断球入射的方向
                                 if((component instanceof Baffle)||(component instanceof LeftBaffle)||(component instanceof RightBaffle)){
                                     collisionDocu.theta=[Math.sin(component.angel),Math.cos(component.angel)];
+                                    var tempDistY=component.center[1]-(oldBall.center[1]+(oldBall.center[0]-component.center[0])*Math.sin(component.angel)/Math.cos(component.angel));
+                                    console.log(tempDistY);
                                 }
                                 //如果是逆时针旋转的挡板
                                 if(component instanceof Baffle){
                                     if(component.center[0]>ball.center[0]){
                                         if(component.center[1]>ball.center[1]){
                                             collisionDocu.kind="acceLeftBottom";
+                                            if(tempDistY>0){
+                                                collisionDocu.kind="acceRightUpper";
+                                            }
                                         }
                                         else{
                                             collisionDocu.kind="acceLeftUpper";
+                                            if(tempDistY>0){
+                                                collisionDocu.kind="acceRightBottom";
+                                            }
                                         }
                                     }
                                     else{
                                         if(component.center[1]>ball.center[1]){
                                             collisionDocu.kind="acceRightBottom";
+                                            if(tempDistY<0){
+                                                collisionDocu.kind="acceLeftUpper";
+                                            }
                                         }
                                         else{
                                             collisionDocu.kind="acceRightUpper";
+                                            if(tempDistY<0){
+                                                collisionDocu.kind="acceLeftBottom";
+                                            }
                                         }
                                     }
                                 }

@@ -257,8 +257,8 @@ function main2() {
                                 //需要根据center来判断是否覆盖冲突，所以需要一直update.true表示可以更新centers,false表示不能更新
                                 playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y],false);
                             }
-                            break;
                         }
+                        break;
                     }
                     case 6: {
                         if(playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag){
@@ -274,8 +274,8 @@ function main2() {
                                 //需要根据center来判断是否覆盖冲突，所以需要一直update.true表示可以更新centers,false表示不能更新
                                 playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y],false);
                             }
-                            break;
                         }
+                        break;
                     }
                     case 7: {
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
@@ -291,7 +291,7 @@ function main2() {
                     }
                     case 8: {
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
-                        if(gameGrid.compatibleBoxs(rightBaffle,2)){
+                        if(gameGrid.compatibleBoxs(rightBaffle,3)){
                             gameGridBox.color=gameGrid.GREEN;
                             clickEventIsOk=true;
                         }
