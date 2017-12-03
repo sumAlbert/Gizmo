@@ -100,6 +100,7 @@ function main2() {
             currentUploadComponent.center=currentComponent.center;
             currentUploadComponent.id=currentComponent.id;
             currentUploadComponent.color=currentComponent.color;
+            currentUploadComponent.fixFlag=currentComponent.fixFlag;
             if((currentComponent instanceof Track)||(currentComponent instanceof Absorber)){
                 currentUploadComponent.centers=currentComponent.centers;
             }
@@ -935,6 +936,8 @@ function main2() {
                     triangle.center=currentComponent.center;
                     triangle.size=currentComponent.size;
                     triangle.color=currentComponent.color;
+                    triangle.fixFlag=currentComponent.fixFlag;
+                    triangle.updateCenters();
                     playArea.playAreaComponents.push(triangle);
                     break;
                 }

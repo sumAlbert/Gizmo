@@ -526,6 +526,13 @@ Gizmo=(function () {
                 this.update(mousePosition);
             this.drawComponents(gl,gl.TRIANGLES,3);
         };
+        this.updateCenters=function () {
+            this.verticesArray=[];
+            this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]+0.05*this.size);
+            this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]-0.05*this.size);
+            this.verticesArray.push(this.center[0]+0.05*this.size,this.center[1]+0.05*this.size);
+            this.rotateAngle();
+        }
     };
 
     //绘制单个网格
