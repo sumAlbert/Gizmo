@@ -22,8 +22,8 @@ public class DBConnection implements HttpSessionBindingListener{
     private void BuildConnection() {
         try{
             Class.forName("com.mysql.jdbc.Driver");
-            String URL = "jdbc:mysql://localhost:3306/Gizmo?useUnicode=true&characterEncoding=utf-8";
-            conn = DriverManager.getConnection(URL,"root", "123456");
+            String URL = "jdbc:mysql://localhost:3306/Gizmo?useUnicode=true&characterEncoding=utf-8&useSSL=false";
+            conn = DriverManager.getConnection(URL,"root", "");
         } catch(Exception e) {
             System.out.println(e.toString());
         }

@@ -4,8 +4,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -24,13 +23,23 @@ public class Index extends HttpServlet {
             case "save":
                 value = (String) req.getParameter("value");
                 try {
+                    String i = "";
                     ResultSet rs = stmt.executeQuery("select count(*) from scenedata");
-                    String i="0";
-                    while (rs.next()){
-                        i= Integer.toString(rs.getInt(1) + 1);
+                    while(rs.next()) {
+                        i = Integer.toString(Integer.parseInt(rs.getString(1)) + 1);
                     }
-                    System.out.println(("insert into scenedata (userId,sceneId,configure) VALUES (\"" + userId + "\",\"" + i + "\",\"" + value + "\")"));
-                    stmt.executeUpdate("insert into scenedata (userId,sceneId,configure) VALUES ('" + userId + "','" + i + "','" + value + "')");
+                    System.out.println(i);
+                    String pathName = "/Users/danielliang/Desktop/" + userId + "-" + i;
+                    File f = new File(pathName);
+                    if (!f.exists()) {
+                        f.createNewFile();
+                    }
+                    FileWriter writer = new FileWriter(f);
+                    writer.write(value);
+                    writer.flush();
+                    writer.close();
+                    System.out.println(("insert into scenedata (userId,sceneId,configure) VALUES (\"" + userId + "\",\"" + i + "\",\"" + pathName + "\")"));
+                    stmt.executeUpdate("insert into scenedata (userId,sceneId,configure) VALUES ('" + userId + "','" + i + "','" + pathName + "')");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
