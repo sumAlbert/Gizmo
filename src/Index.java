@@ -67,17 +67,23 @@ public class Index extends HttpServlet {
                 break;
             case "read":
                 String result = null;
+                String resultValue = "";
                 try {
                     ResultSet rs = stmt.executeQuery("select configure from sceneData where userId = " + userId + " and sceneId = " + sceneId);
                     while (rs.next()) {
-                        if(result == null) {
-                            result = rs.getString(1);
-                        }
+                        result = rs.getString(1);
                     }
+                    File f = new File (result);
+                    BufferedReader bf = new BufferedReader(new FileReader(f));
+                    String tempString = null;
+                    while ((tempString = bf.readLine()) != null) {
+                        resultValue += tempString;
+                    }
+                    bf.close();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                printWriter.print("{\"resultCode\":true,\"value\":" + result + "}");
+                printWriter.print("{\"resultCode\":true,\"value\":" + resultValue + "}");
                 printWriter.close();
                 break;
             case "test":
