@@ -64,13 +64,13 @@ function main() {
 }
 
 function main2() {
-
     var game=new Gizmo.Game();
     var playArea=game.playArea;
     var gameGrid=playArea.gameGrid;
     var gameGridBox=gameGrid.gridBox;
     var canvas=document.getElementById("playArea");
     var physicsEngine=new Gizmo.PhysicsEngine();
+    init();
     runAllHandler=function () {};
     drawAllHandler=function () {};
 
@@ -131,41 +131,59 @@ function main2() {
     });
     //点击打开事件
     document.getElementById("open-playArea").addEventListener("click",function () {
-        // $.ajax({
-        //     type: 'post',
-        //     url: 'Index',
-        //     data:{
-        //         command:'open',
-        //         userId:'1'
-        //     },
-        //     success: function (data) {
-        //         console.log(data);
-        //         var JSON_data=JSON.parse(data);
-        //         console.log(JSON_data);
-        //     },
-        //     error: function () {
-        //         console.log("error")
-        //     }
-        // });
-
-        // $.ajax({
-        //     type: 'post',
-        //     url: 'Index',
-        //     data:{
-        //         command:'read',
-        //         userId:'1',
-        //         sceneId: '3'
-        //     },
-        //     success: function (data) {
-        //         console.log(data);
-        //         var JSON_data=JSON.parse(data);
-        //         buildByFile(JSON_data);
-        //     },
-        //     error: function () {
-        //         console.log("error")
-        //     }
-        // })
+        document.getElementById("main").style.cssText="filter: blur(1.5px);";
+        document.getElementById("mainHidden").style.cssText="display:flex;";
+        $.ajax({
+            type: 'post',
+            url: 'Index',
+            data:{
+                command:'open',
+                userId:'1'
+            },
+            success: function (data) {
+                var JSON_data=JSON.parse(data);
+                var value=JSON_data.value;
+                for(let i in value){
+                    let newDom=document.createElement("div");
+                    newDom.innerHTML=value[i];
+                    newDom.setAttribute("class","sceneContent-line2-item");
+                    newDom.addEventListener("click",function () {
+                        $.ajax({
+                            type: 'post',
+                            url: 'Index',
+                            data:{
+                                command:'read',
+                                userId:'1',
+                                sceneId: value[i]
+                            },
+                            success: function (data) {
+                                var JSON_data=JSON.parse(data);
+                                buildByFile(JSON_data);
+                                document.getElementById("main").style.cssText="";
+                                document.getElementById("mainHidden").style.cssText="";
+                            },
+                            error: function () {
+                                console.log("error")
+                            }
+                        })
+                    });
+                    document.getElementById("sceneList").append(newDom);
+                }
+            },
+            error: function () {
+                console.log("error")
+            }
+        });
     });
+    //网格颜色修改事件
+    document.getElementById("changeColorGridBox").addEventListener("input",function () {
+        var changeInput=document.getElementById("changeColorGridBox");
+        console.log(changeInput.value);
+        document.getElementById("symbolBox-gridBox").style.cssText="background:"+changeInput.value;
+        document.getElementById("changeColorGridBox").offsetParent.style.cssText="color:"+changeInput.value;
+        gameGrid.color= HexToFloat(changeInput.value);
+        playArea.drawAll();
+    },false);
     // 鼠标移动事件监听
     canvas.onmouseover=function (ev) {
         var gameComponents=null;//记录移动的时候正在操纵的附件
@@ -837,49 +855,50 @@ function main2() {
         }
     };
     //点击新建三角形
-    document.getElementById("tool-item1").addEventListener("click",function () {
+    document.getElementById("symbolBox-tri").addEventListener("click",function () {
         if(game.state!==1){
             game.state=1;
         }
     });
     //点击新建圆
-    document.getElementById("tool-item2").addEventListener("click",function () {
+    document.getElementById("symbolBox-cir").addEventListener("click",function () {
+        console.log("123");
         if(game.state!==2){
             game.state=2;
         }
     });
     //点击新建球
-    document.getElementById("tool-item3").addEventListener("click",function () {
+    document.getElementById("symbolBox-bal").addEventListener("click",function () {
         if(game.state!==3){
             game.state=3;
         }
     });
     //新建长板
-    document.getElementById("tool-item4").addEventListener("click",function () {
+    document.getElementById("symbolBox-baf").addEventListener("click",function () {
         if(game.state!==4){
             game.state=4;
         }
     });
     //新建吸收器
-    document.getElementById("tool-item5").addEventListener("click",function () {
+    document.getElementById("symbolBox-abs").addEventListener("click",function () {
         if(game.state!==5){
             game.state=5;
         }
     });
     //新建轨道
-    document.getElementById("tool-item6").addEventListener("click",function () {
+    document.getElementById("symbolBox-tra").addEventListener("click",function () {
         if(game.state!==6){
             game.state=6;
         }
     });
     //新建顺时针旋转挡板
-    document.getElementById("tool-item7").addEventListener("click",function () {
+    document.getElementById("symbolBox-lef").addEventListener("click",function () {
         if(game.state!==7){
             game.state=7;
         }
     });
     //新建逆时针旋转挡板
-    document.getElementById("tool-item8").addEventListener("click",function () {
+    document.getElementById("symbolBox-rig").addEventListener("click",function () {
         if(game.state!==8){
             game.state=8;
         }
@@ -921,6 +940,43 @@ function main2() {
             clearInterval(runAllHandler);
         window.removeEventListener('keydown', doKeyDown, true);
     });
+    //加号
+    var addsDOM=document.getElementsByClassName("tool-num-add");
+    for (let i = 0; i < addsDOM.length; i++) {
+        addsDOM[i].addEventListener("click",function () {
+            if(addsDOM[i].parentNode.childNodes[1].innerHTML==="尺寸"){
+                if(addsDOM[i].parentNode.childNodes[5].childNodes[1].value<20){
+                    addsDOM[i].parentNode.childNodes[5].childNodes[1].value=(addsDOM[i].parentNode.childNodes[5].childNodes[1].value-0)+1;
+                }
+            }
+            else{
+                if(addsDOM[i].parentNode.childNodes[5].childNodes[1].value<270){
+                    addsDOM[i].parentNode.childNodes[5].childNodes[1].value=(addsDOM[i].parentNode.childNodes[5].childNodes[1].value-0)+90;
+                }
+            }
+        });
+    }
+    //减号
+    var addsDOM=document.getElementsByClassName("tool-num-minus");
+    for (let i = 0; i < addsDOM.length; i++) {
+        addsDOM[i].addEventListener("click",function () {
+            if(addsDOM[i].parentNode.childNodes[1].innerHTML==="尺寸"){
+                if(addsDOM[i].parentNode.childNodes[5].childNodes[1].value>1){
+                    addsDOM[i].parentNode.childNodes[5].childNodes[1].value=(addsDOM[i].parentNode.childNodes[5].childNodes[1].value-0)-1;
+                }
+            }
+            else{
+                if(addsDOM[i].parentNode.childNodes[5].childNodes[1].value>0){
+                    addsDOM[i].parentNode.childNodes[5].childNodes[1].value=(addsDOM[i].parentNode.childNodes[5].childNodes[1].value-0)-90;
+                }
+            }
+        });
+    }
+    //关闭场景列表
+    document.getElementById("closeSceneList").addEventListener("click",function () {
+        document.getElementById("main").style.cssText="";
+        document.getElementById("mainHidden").style.cssText="";
+    });
 
     doKeyDown=function doKeyDown(e) {
         var keyID = e.keyCode ? e.keyCode :e.which;
@@ -937,7 +993,7 @@ function main2() {
         // if(keyID === 37 || keyID === 65)  { // left arrow and A
         //     console.log('456');
         // }
-    }
+    };
     
     function  buildByFile(JSON_data) {
         console.log(JSON_data);
@@ -1072,4 +1128,181 @@ function main2() {
             playArea.drawAll();
         },1000);
     }
+
+
+    function HexToFloat(value) {
+        var color=[,,,1.0];
+        color[0]=parseInt(value.substring(1,3),16)/255;
+        color[1]=parseInt(value.substring(3,5),16)/255;
+        color[2]=parseInt(value.substring(5,7),16)/255;
+        return color;
+    }
+    
+    function init() {
+        document.getElementById("symbolBox-gridBox").style.cssText="background:#87cefa";
+        document.getElementById("changeColorGridBox").offsetParent.style.cssText="color:#87cefa";
+        gameGrid.color= HexToFloat("#87cefa");
+    }
 }
+
+//工具菜单栏缩放控制
+function toolMenuControl(id){
+    switch (id){
+        case 0: {
+            var toolMenuBar = document.getElementById("toolBar-gridBox");
+            var toolContent = document.getElementById("toolContent-gridBox");
+            if(toolMenuBar.getAttribute("data")==="true"){
+                toolMenuBar.setAttribute("data","false");
+                toolMenuBar.children[1].style.cssText="transform:rotate(-90deg)";
+                toolContent.style.cssText="height: 0";
+            }
+            else{
+                toolMenuBar.setAttribute("data","true");
+                toolMenuBar.children[1].style.cssText="transform:rotate(0)";
+                toolContent.style.cssText="height: 2.7em";
+            }
+            break;
+        }
+        case 1: {
+            var toolMenuBar = document.getElementById("toolBar-gridBoxS");
+            var toolContent = document.getElementById("toolContent-gridBoxS");
+            if(toolMenuBar.getAttribute("data")==="true"){
+                toolMenuBar.setAttribute("data","false");
+                toolMenuBar.children[1].style.cssText="transform:rotate(-90deg)";
+                toolContent.style.cssText="height: 0";
+            }
+            else{
+                toolMenuBar.setAttribute("data","true");
+                toolMenuBar.children[1].style.cssText="transform:rotate(0)";
+                toolContent.style.cssText="height: 2.7em";
+            }
+            break;
+        }
+        case 2: {
+            var toolMenuBar = document.getElementById("toolBar-tri");
+            var toolContent = document.getElementById("toolContent-tri");
+            if(toolMenuBar.getAttribute("data")==="true"){
+                toolMenuBar.setAttribute("data","false");
+                toolMenuBar.children[1].style.cssText="transform:rotate(-90deg)";
+                toolContent.style.cssText="height: 0";
+            }
+            else{
+                toolMenuBar.setAttribute("data","true");
+                toolMenuBar.children[1].style.cssText="transform:rotate(0)";
+                toolContent.style.cssText="height: 8.1em";
+            }
+            break;
+        }
+        case 3: {
+            var toolMenuBar = document.getElementById("toolBar-cir");
+            var toolContent = document.getElementById("toolContent-cir");
+            if(toolMenuBar.getAttribute("data")==="true"){
+                toolMenuBar.setAttribute("data","false");
+                toolMenuBar.children[1].style.cssText="transform:rotate(-90deg)";
+                toolContent.style.cssText="height: 0";
+            }
+            else{
+                toolMenuBar.setAttribute("data","true");
+                toolMenuBar.children[1].style.cssText="transform:rotate(0)";
+                toolContent.style.cssText="height: 5.4em";
+            }
+            break;
+        }
+        case 4: {
+            var toolMenuBar = document.getElementById("toolBar-bal");
+            var toolContent = document.getElementById("toolContent-bal");
+            if(toolMenuBar.getAttribute("data")==="true"){
+                toolMenuBar.setAttribute("data","false");
+                toolMenuBar.children[1].style.cssText="transform:rotate(-90deg)";
+                toolContent.style.cssText="height: 0";
+            }
+            else{
+                toolMenuBar.setAttribute("data","true");
+                toolMenuBar.children[1].style.cssText="transform:rotate(0)";
+                toolContent.style.cssText="height: 5.4em";
+            }
+            break;
+        }
+        case 5: {
+            var toolMenuBar = document.getElementById("toolBar-baf");
+            var toolContent = document.getElementById("toolContent-baf");
+            if(toolMenuBar.getAttribute("data")==="true"){
+                toolMenuBar.setAttribute("data","false");
+                toolMenuBar.children[1].style.cssText="transform:rotate(-90deg)";
+                toolContent.style.cssText="height: 0";
+            }
+            else{
+                toolMenuBar.setAttribute("data","true");
+                toolMenuBar.children[1].style.cssText="transform:rotate(0)";
+                toolContent.style.cssText="height: 5.4em";
+            }
+            break;
+        }
+        case 6: {
+            var toolMenuBar = document.getElementById("toolBar-abs");
+            var toolContent = document.getElementById("toolContent-abs");
+            if(toolMenuBar.getAttribute("data")==="true"){
+                toolMenuBar.setAttribute("data","false");
+                toolMenuBar.children[1].style.cssText="transform:rotate(-90deg)";
+                toolContent.style.cssText="height: 0";
+            }
+            else{
+                toolMenuBar.setAttribute("data","true");
+                toolMenuBar.children[1].style.cssText="transform:rotate(0)";
+                toolContent.style.cssText="height: 5.4em";
+            }
+            break;
+        }
+        case 7: {
+            var toolMenuBar = document.getElementById("toolBar-tra");
+            var toolContent = document.getElementById("toolContent-tra");
+            if(toolMenuBar.getAttribute("data")==="true"){
+                toolMenuBar.setAttribute("data","false");
+                toolMenuBar.children[1].style.cssText="transform:rotate(-90deg)";
+                toolContent.style.cssText="height: 0";
+            }
+            else{
+                toolMenuBar.setAttribute("data","true");
+                toolMenuBar.children[1].style.cssText="transform:rotate(0)";
+                toolContent.style.cssText="height: 5.4em";
+            }
+            break;
+        }
+        case 8: {
+            var toolMenuBar = document.getElementById("toolBar-lef");
+            var toolContent = document.getElementById("toolContent-lef");
+            if(toolMenuBar.getAttribute("data")==="true"){
+                toolMenuBar.setAttribute("data","false");
+                toolMenuBar.children[1].style.cssText="transform:rotate(-90deg)";
+                toolContent.style.cssText="height: 0";
+            }
+            else{
+                toolMenuBar.setAttribute("data","true");
+                toolMenuBar.children[1].style.cssText="transform:rotate(0)";
+                toolContent.style.cssText="height: 5.4em";
+            }
+            break;
+        }
+        case 9: {
+            var toolMenuBar = document.getElementById("toolBar-rig");
+            var toolContent = document.getElementById("toolContent-rig");
+            if(toolMenuBar.getAttribute("data")==="true"){
+                toolMenuBar.setAttribute("data","false");
+                toolMenuBar.children[1].style.cssText="transform:rotate(-90deg)";
+                toolContent.style.cssText="height: 0";
+            }
+            else{
+                toolMenuBar.setAttribute("data","true");
+                toolMenuBar.children[1].style.cssText="transform:rotate(0)";
+                toolContent.style.cssText="height: 5.4em";
+            }
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+
+
+

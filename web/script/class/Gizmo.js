@@ -583,6 +583,7 @@ Gizmo=(function () {
         //属性
         this.id="GameGrid"+this.randomPostfix();
         this.verticesArray=[];
+        this.color=[0.5294117647058824, 0.807843137254902, 0.9803921568627451,1.0];
         this.gridBoxs=[];//记录每一格的属性
         this.gridBox=new GameGridBox();
         this.init=function(){
@@ -907,7 +908,7 @@ Gizmo=(function () {
 
         this.GREEN=[0.0,1.0,0.0,1.0];
         this.RED=[1.0,0.0,0.0,1.0];
-        this.WHITE=[1.0,1.0,1.0,1.0];
+        this.WHITE=[1.0,1.0,1.0,0.0];
 
         //TODO 包装到函数里面
         this.xformMatrix.setRotate(this.ANGLE_DEFAULT,0,0,1);//平移旋转变换矩阵
@@ -1611,9 +1612,6 @@ Gizmo=(function () {
                                 if(component instanceof LeftBaffle){
                                     if(component.rotateSpeed!==0){
                                         collisionDocu.kind="acceRightBottom";
-                                        if(tempDistY<0){
-                                            collisionDocu.kind="acceLeftUpper";
-                                        }
                                     }
                                     if(component.rotateSpeed===0&&component.angel===0)
                                         collisionDocu.kind="Bottom";
@@ -1623,9 +1621,6 @@ Gizmo=(function () {
                                 if(component instanceof RightBaffle){
                                     if(component.rotateSpeed!==0){
                                         collisionDocu.kind="acceLeftUpper";
-                                        if(tempDistY>0){
-                                            collisionDocu.kind="acceRightBottom";
-                                        }
                                     }
                                     if(component.rotateSpeed===0&&component.angel===0)
                                         collisionDocu.kind="Bottom";
@@ -1827,9 +1822,6 @@ Gizmo=(function () {
                             if(component instanceof LeftBaffle){
                                 if(component.rotateSpeed!==0){
                                     collisionDocu.kind="acceRightBottom";
-                                    if(tempDistY<0){
-                                        collisionDocu.kind="acceLeftUpper";
-                                    }
                                 }
                                 if(component.rotateSpeed===0&&component.angel===0)
                                     collisionDocu.kind="Bottom";
@@ -1839,9 +1831,6 @@ Gizmo=(function () {
                             if(component instanceof RightBaffle){
                                 if(component.rotateSpeed!==0){
                                     collisionDocu.kind="acceLeftUpper";
-                                    if(tempDistY>0){
-                                        collisionDocu.kind="acceRightBottom";
-                                    }
                                 }
                                 if(component.rotateSpeed===0&&component.angel===0)
                                     collisionDocu.kind="Bottom";
