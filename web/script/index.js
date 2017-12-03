@@ -116,13 +116,13 @@ function main2() {
            type: 'post',
            url: 'Index',
            data:{
-               command:'test',
+               command:'save',
                userId:'1',
                value:uploadInfoStr
            },
            success: function (data) {
                var JSON_data=JSON.parse(data);
-               buildByFile(JSON_data);
+               // buildByFile(JSON_data);
            },
            error: function () {
                console.log("error")
@@ -131,7 +131,22 @@ function main2() {
     });
     //点击打开事件
     document.getElementById("open-playArea").addEventListener("click",function () {
-        console.log("open-playArea");
+        $.ajax({
+            type: 'post',
+            url: 'Index',
+            data:{
+                command:'open',
+                userId:'1'
+            },
+            success: function (data) {
+                console.log(data);
+                var JSON_data=JSON.parse(data);
+                console.log(JSON_data);
+            },
+            error: function () {
+                console.log("error")
+            }
+        })
     });
     // 鼠标移动事件监听
     canvas.onmouseover=function (ev) {
