@@ -51,7 +51,7 @@ public class Index extends HttpServlet {
                 try{
                     ResultSet rs = stmt.executeQuery("select * from sceneData");
                     while (rs.next()) {
-                        scenes.add(rs.getString(3));
+                        scenes.add(rs.getString(2));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
