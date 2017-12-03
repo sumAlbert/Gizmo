@@ -108,7 +108,14 @@ function main2() {
         }
         uploadInfo.attachmentInfo=attachmentInfo;
         var uploadInfoStr=JSON.stringify(uploadInfo);
-
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST","./Index");
+        xhr.send("value="+uploadInfoStr);
+        xhr.onreadystatechange=function () {
+            if(xhr.readyState===4&&xhr.status===200){
+                console.log(xhr.responseText);
+            }
+        };
     });
     // 鼠标移动事件监听
     canvas.onmouseover=function (ev) {
@@ -882,4 +889,8 @@ function main2() {
         //     console.log('456');
         // }
     }
+    
+    // function  uploadFinish() {
+    //
+    // }
 }
