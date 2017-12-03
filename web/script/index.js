@@ -969,6 +969,68 @@ function main2() {
                         playArea.playAreaComponents.push(ball);
                         break;
                     }
+                    case "Baf":{
+                        var baffle=new Gizmo.Baffle();
+                        baffle.id=currentComponent.id;
+                        baffle.center=currentComponent.center;
+                        baffle.size=currentComponent.size;
+                        baffle.color=currentComponent.color;
+                        baffle.fixFlag=currentComponent.fixFlag;
+                        baffle.angel=currentComponent.angel;
+                        baffle.vertexsByCenter();
+                        playArea.playAreaComponents.push(baffle);
+                        break;
+                    }
+                    case "Abs":{
+                        var absorber=new Gizmo.Absorber();
+                        absorber.id=currentComponent.id;
+                        absorber.center=currentComponent.center;
+                        absorber.centers=currentComponent.centers;
+                        absorber.size=currentComponent.size;
+                        absorber.color=currentComponent.color;
+                        absorber.fixFlag=currentComponent.fixFlag;
+                        absorber.angel=currentComponent.angel;
+                        absorber.vertexsByCenter();
+                        playArea.playAreaComponents.push(absorber);
+                        break;
+                    }
+                    case "Tra":{
+                        var track=new Gizmo.Track();
+                        track.id=currentComponent.id;
+                        track.center=currentComponent.center;
+                        track.centers=currentComponent.centers;
+                        track.size=currentComponent.size;
+                        track.color=currentComponent.color;
+                        track.fixFlag=currentComponent.fixFlag;
+                        track.angel=currentComponent.angel;
+                        track.vertexsByCenter();
+                        playArea.playAreaComponents.push(track);
+                        break;
+                    }
+                    case "Rig":{
+                        var rightBaffle=new Gizmo.RightBaffle();
+                        rightBaffle.id=currentComponent.id;
+                        rightBaffle.center=currentComponent.center;
+                        rightBaffle.size=currentComponent.size;
+                        rightBaffle.color=currentComponent.color;
+                        rightBaffle.fixFlag=currentComponent.fixFlag;
+                        rightBaffle.angel=currentComponent.angel;
+                        rightBaffle.vertexsByCenter();
+                        playArea.playAreaComponents.push(rightBaffle);
+                        break;
+                    }
+                    case "Lef":{
+                        var leftBaffle=new Gizmo.LeftBaffle();
+                        leftBaffle.id=currentComponent.id;
+                        leftBaffle.center=currentComponent.center;
+                        leftBaffle.size=currentComponent.size;
+                        leftBaffle.color=currentComponent.color;
+                        leftBaffle.fixFlag=currentComponent.fixFlag;
+                        leftBaffle.angel=currentComponent.angel;
+                        leftBaffle.vertexsByCenter();
+                        playArea.playAreaComponents.push(leftBaffle);
+                        break;
+                    }
                     default:
                         break;
                 }
