@@ -76,11 +76,31 @@ function main2() {
     //点击新建事件
     document.getElementById("new-playArea").addEventListener("click",function () {
         game.modes=0;
+        game.state=0;
         playArea.init();
+        physicsEngine=new Gizmo.PhysicsEngine();
         if(runAllHandler)
             clearInterval(runAllHandler);
         if(drawAllHandler)
             clearInterval(drawAllHandler);
+    });
+    //点击保存事件
+    document.getElementById("save-playArea").addEventListener("click",function () {
+        var uploadInfo={};
+        //网格数据
+        uploadInfo.gridBoxs=gameGrid.gridBoxs;
+        //组建数据
+        var attachmentInfo=[];
+        for(var item in playArea.playAreaComponents){
+            var currentUploadComponent={};
+            var currentComponent=playArea.playAreaComponents[item];
+            currentUploadComponent.size=currentComponent.size;
+            currentUploadComponent.center=currentComponent.center;
+            currentUploadComponent.id=currentComponent.id;
+            if((currentComponent instanceof Track)||(currentComponent instanceof Absorber)){
+                currentUploadComponent.centers=currentComponent.centers;
+            }
+        }
     });
     // 鼠标移动事件监听
     canvas.onmouseover=function (ev) {
