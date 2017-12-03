@@ -621,35 +621,58 @@ Gizmo=(function () {
                     }
                     break;
                 }
-                case 2:{
-                    for(var i=0;i<component.centers.length;i=i+2){
-                        var centerX=Math.floor(10*(component.centers[i]+0.01))+10;
-                        var centerY=Math.floor(10*(component.centers[i+1]+0.01))+10;
-                        if(component.size%2===0){
-                            var leftBottomX=centerX-component.size/2;
-                            var leftBottomY=centerY-component.size/2;
-                            for(var i=0;i<component.size;i++){
-                                for(var j=0;j<component.size;j++){
-                                    this.gridBoxs[leftBottomX+i][leftBottomY+j]=component.id;
-                                }
-                            }
-                        }
-                        else{
-                            var leftBottomX=centerX-(component.size-1)/2;
-                            var leftBottomY=centerY-(component.size-1)/2;
-                            for(var k=0;k<component.size;k++){
-                                for(var j=0;j<component.size;j++){
-                                    this.gridBoxs[leftBottomX+k][leftBottomY+j]=component.id;
-                                }
+                case 2:{//左挡板
+                    var tempCenter=[component.center[0]+0.05*component.size,component.center[1]-0.05*component.size];
+                    var centerX=Math.floor(10*(tempCenter[0]+0.01))+10;
+                    var centerY=Math.floor(10*(tempCenter[1]+0.01))+10;
+                    if(component.size%2===0){
+                        var leftBottomX=centerX-component.size/2;
+                        var leftBottomY=centerY-component.size/2;
+                        for(var i=0;i<component.size;i++){
+                            for(var j=0;j<component.size;j++){
+                                this.gridBoxs[leftBottomX+i][leftBottomY+j]=component.id;
                             }
                         }
                     }
-                    console.log(this.gridBoxs);
+                    else{
+                        var leftBottomX=centerX-(component.size-1)/2;
+                        var leftBottomY=centerY-(component.size-1)/2;
+                        for(var i=0;i<component.size;i++){
+                            for(var j=0;j<component.size;j++){
+                                this.gridBoxs[leftBottomX+i][leftBottomY+j]=component.id;
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 3:{//右挡板
+                    var tempCenter=[component.center[0]-0.05*component.size,component.center[1]-0.05*component.size];
+                    var centerX=Math.floor(10*(tempCenter[0]+0.01))+10;
+                    var centerY=Math.floor(10*(tempCenter[1]+0.01))+10;
+                    if(component.size%2===0){
+                        var leftBottomX=centerX-component.size/2;
+                        var leftBottomY=centerY-component.size/2;
+                        for(var i=0;i<component.size;i++){
+                            for(var j=0;j<component.size;j++){
+                                this.gridBoxs[leftBottomX+i][leftBottomY+j]=component.id;
+                            }
+                        }
+                    }
+                    else{
+                        var leftBottomX=centerX-(component.size-1)/2;
+                        var leftBottomY=centerY-(component.size-1)/2;
+                        for(var i=0;i<component.size;i++){
+                            for(var j=0;j<component.size;j++){
+                                this.gridBoxs[leftBottomX+i][leftBottomY+j]=component.id;
+                            }
+                        }
+                    }
                     break;
                 }
                 default:
                     break;
             }
+            console.log(this.gridBoxs);
         };
         this.compatibleBoxs=function (component,kind) {
             var result=true;
@@ -813,6 +836,29 @@ Gizmo=(function () {
                     break;
             }
             return result;
+        };
+        this.gameComponentsId=function (mousePosition) {
+            //常规检查法
+            var leftUpperX=Math.floor(10*mousePosition[0])/10;
+            var leftUpperY=Math.floor(10*mousePosition[1])/10+0.1;
+            var centerTemp=[leftUpperX+0.05*this.size,leftUpperY-0.05*this.size];
+            var leftBottomX=Math.floor(10*(centerTemp[0]+0.01))+10;
+            var leftBottomY=Math.floor(10*(centerTemp[1]+0.01))+10;
+            if(this.gridBoxs[leftBottomX]&&this.gridBoxs[leftBottomX][leftBottomY]&&this.gridBoxs[leftBottomX][leftBottomY].length>2){
+                return this.gridBoxs[leftBottomX][leftBottomY];
+            }
+
+        };
+        this.gameClearById=function (id) {
+            for(var i=0;i<20;i++){
+                if(this.gridBoxs[i]){
+                    for(var j=0;j<20;j++){
+                        if(this.gridBoxs[i][j]&&this.gridBoxs[i][j]===id){
+                            this.gridBoxs[i][j]=null;
+                        }
+                    }
+                }
+            }
         };
     };
 
@@ -1006,7 +1052,7 @@ Gizmo=(function () {
             this.mousePosition=[0.0,0.0];
             this.gl.clear(this.gl.COLOR_BUFFER_BIT);
             this.drawAll();
-        }
+        };
         this.receiveKeyDown=function (keyID) {
             switch (keyID){
                 case 87: {
@@ -1048,7 +1094,21 @@ Gizmo=(function () {
                 default:
                     break;
             }
-        }
+        };
+        this.playAreaComponentsClearById=function (id) {
+            var tempPlayAreaComponents=[];
+            var tempComponentInfo=null;
+            for(var item in this.playAreaComponents){
+                if(this.playAreaComponents[item].id!==id){
+                    tempPlayAreaComponents.push(this.playAreaComponents[item]);
+                }
+                else{
+                    tempComponentInfo=this.playAreaComponents[item];
+                }
+            }
+            this.playAreaComponents=tempPlayAreaComponents;
+            return tempComponentInfo;
+        };
     };
 
     this.Game=function () {
@@ -1424,7 +1484,6 @@ Gizmo=(function () {
                                     //如果是0/90/180/270才设置
                                     if((1-Math.abs(tempTheta[0]))<0.001||(1-Math.abs(tempTheta[1]))<0.001){
                                         collisionDocu.theta=vectorSlop.XDirtAngle();
-                                        console.log(collisionDocu.theta);
                                     }
                                     //判断是否被开始结点吸收
                                     if(component.centers.length>2){
@@ -1494,9 +1553,8 @@ Gizmo=(function () {
                                 }
                                 //如果是挡板和左右挡板,并且判断球入射的方向
                                 if((component instanceof Baffle)||(component instanceof LeftBaffle)||(component instanceof RightBaffle)){
-                                    collisionDocu.theta=[Math.sin(component.angel),Math.cos(component.angel)];
-                                    var tempDistY=component.center[1]-(oldBall.center[1]+(oldBall.center[0]-component.center[0])*Math.sin(component.angel)/Math.cos(component.angel));
-                                    console.log(tempDistY);
+                                    collisionDocu.theta=[Math.sin(component.angel*Math.PI/180),Math.cos(component.angel*Math.PI/180)];
+                                    var tempDistY=oldBall.center[1]-(component.center[1]+(oldBall.center[0]-component.center[0])*Math.sin(component.angel*Math.PI/180)/Math.cos(component.angel*Math.PI/180));
                                 }
                                 //如果是逆时针旋转的挡板
                                 if(component instanceof Baffle){
@@ -1530,16 +1588,24 @@ Gizmo=(function () {
                                     }
                                 }
                                 if(component instanceof LeftBaffle){
-                                    if(component.rotateSpeed!==0)
+                                    if(component.rotateSpeed!==0){
                                         collisionDocu.kind="acceRightBottom";
+                                        if(tempDistY<0){
+                                            collisionDocu.kind="acceLeftUpper";
+                                        }
+                                    }
                                     if(component.rotateSpeed===0&&component.angel===0)
                                         collisionDocu.kind="Bottom";
                                     if(component.rotateSpeed===0&&component.angel===90)
                                         collisionDocu.kind="Right";
                                 }
                                 if(component instanceof RightBaffle){
-                                    if(component.rotateSpeed!==0)
+                                    if(component.rotateSpeed!==0){
                                         collisionDocu.kind="acceLeftUpper";
+                                        if(tempDistY>0){
+                                            collisionDocu.kind="acceRightBottom";
+                                        }
+                                    }
                                     if(component.rotateSpeed===0&&component.angel===0)
                                         collisionDocu.kind="Bottom";
                                     if(component.rotateSpeed===0&&component.angel===-90)
@@ -1583,7 +1649,7 @@ Gizmo=(function () {
                                 oldBall.speed[0]=oldBall.speed[0]+0.1;
                                 oldBall.speed[1]=oldBall.speed[1]+0.1;
                                 if(component instanceof Baffle){
-                                    collisionDocu.theta=[Math.sin(component.angel),Math.cos(component.angel)];
+                                    collisionDocu.theta=[Math.sin(component.angel*Math.PI/180),Math.cos(component.angel*Math.PI/180)];
                                 }
                                 //如果是逆时针旋转的挡板
                                 if(component instanceof Baffle){
@@ -1699,40 +1765,63 @@ Gizmo=(function () {
                                         }
                                     }
                                 }
+                                else{
+                                    collisionDocu.theta=vectorSlop.XDirtAngle();
+                                }
                             }
-                            if((component instanceof Baffle)||(component instanceof LeftBaffle)){
-                                collisionDocu.theta = [Math.sin(component.angel), Math.cos(component.angel)];
+                            if((component instanceof Baffle)||(component instanceof LeftBaffle)||(component instanceof RightBaffle)){
+                                collisionDocu.theta=[Math.sin(component.angel*Math.PI/180),Math.cos(component.angel*Math.PI/180)];
                             }
                             //如果是逆时针旋转的挡板
                             if(component instanceof Baffle){
                                 if(component.center[0]>ball.center[0]){
                                     if(component.center[1]>ball.center[1]){
                                         collisionDocu.kind="acceLeftBottom";
+                                        if(tempDistY>0){
+                                            collisionDocu.kind="acceRightUpper";
+                                        }
                                     }
                                     else{
                                         collisionDocu.kind="acceLeftUpper";
+                                        if(tempDistY>0){
+                                            collisionDocu.kind="acceRightBottom";
+                                        }
                                     }
                                 }
                                 else{
                                     if(component.center[1]>ball.center[1]){
                                         collisionDocu.kind="acceRightBottom";
+                                        if(tempDistY<0){
+                                            collisionDocu.kind="acceLeftUpper";
+                                        }
                                     }
                                     else{
                                         collisionDocu.kind="acceRightUpper";
+                                        if(tempDistY<0){
+                                            collisionDocu.kind="acceLeftBottom";
+                                        }
                                     }
                                 }
                             }
                             if(component instanceof LeftBaffle){
-                                if(component.rotateSpeed!==0)
+                                if(component.rotateSpeed!==0){
                                     collisionDocu.kind="acceRightBottom";
+                                    if(tempDistY<0){
+                                        collisionDocu.kind="acceLeftUpper";
+                                    }
+                                }
                                 if(component.rotateSpeed===0&&component.angel===0)
                                     collisionDocu.kind="Bottom";
                                 if(component.rotateSpeed===0&&component.angel===90)
                                     collisionDocu.kind="Right";
                             }
                             if(component instanceof RightBaffle){
-                                if(component.rotateSpeed!==0)
+                                if(component.rotateSpeed!==0){
                                     collisionDocu.kind="acceLeftUpper";
+                                    if(tempDistY>0){
+                                        collisionDocu.kind="acceRightBottom";
+                                    }
+                                }
                                 if(component.rotateSpeed===0&&component.angel===0)
                                     collisionDocu.kind="Bottom";
                                 if(component.rotateSpeed===0&&component.angel===-90)

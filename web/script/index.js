@@ -75,10 +75,16 @@ function main2() {
 
     //点击新建事件
     document.getElementById("new-playArea").addEventListener("click",function () {
-        alert("123");
+        game.modes=0;
+        playArea.init();
+        if(runAllHandler)
+            clearInterval(runAllHandler);
+        if(drawAllHandler)
+            clearInterval(drawAllHandler);
     });
     // 鼠标移动事件监听
     canvas.onmouseover=function (ev) {
+        var gameComponents=null;//记录移动的时候正在操纵的附件
         if(game.modes===0){
             drawAllHandler=setInterval(function () {
                 playArea.drawAll();
@@ -201,7 +207,6 @@ function main2() {
                             clickEventIsOk=true;
                         }
                         else{
-                            console.log(gameGrid.gridBoxs);
                             gameGridBox.color=gameGrid.RED;
                             clickEventIsOk=false;
                         }
@@ -360,7 +365,7 @@ function main2() {
                             leftBaffle.fixFlag=true;
                             clickEventIsOk=false;
                             game.state=0;
-                            gameGrid.fillGridBoxs(leftBaffle,1);
+                            gameGrid.fillGridBoxs(leftBaffle,2);
                             canvas.onmousedown = null;
                         }
                         break;
@@ -370,7 +375,7 @@ function main2() {
                             rightBaffle.fixFlag=true;
                             clickEventIsOk=false;
                             game.state=0;
-                            gameGrid.fillGridBoxs(rightBaffle,1);
+                            gameGrid.fillGridBoxs(rightBaffle,3);
                             canvas.onmousedown = null;
                         }
                         break;
@@ -402,6 +407,330 @@ function main2() {
             canvas.onmouseout = function (ev) {
                 clearInterval(drawAllHandler);
                 gameGrid.gridBox.color=gameGrid.WHITE;
+                if(game.state===1)
+                    playArea.playAreaComponents.pop();
+                if(game.state===2)
+                    playArea.playAreaComponents.pop();
+                if(game.state===3)
+                    playArea.playAreaComponents.pop();
+                if(game.state===4)
+                    playArea.playAreaComponents.pop();
+                if(game.state===5)
+                    playArea.playAreaComponents.pop();
+                if(game.state===6)
+                    playArea.playAreaComponents.pop();
+                if(game.state===7)
+                    playArea.playAreaComponents.pop();
+                if(game.state===8)
+                    playArea.playAreaComponents.pop();
+                playArea.drawAll();
+                canvas.onmousemove=null;
+            };
+        }
+        else if(game.modes===3){
+            drawAllHandler=setInterval(function () {
+                playArea.drawAll();
+            },20);
+            gameGridBox.gridBoxSize=[1,1];
+            canvas.onmousemove = function (ev) {
+                //获取鼠标在游戏网格中的位置
+                gameGrid.gridBox.color=gameGrid.GREEN;
+                var x=ev.clientX;
+                var y=ev.clientY;
+                var rect=ev.target.getBoundingClientRect();
+                x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
+                y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
+                playArea.mousePosition=[x,y];
+                if(gameGrid.gameComponentsId(playArea.mousePosition)&&gameGrid.gameComponentsId(playArea.mousePosition).length>2){
+                    gameGrid.gridBox.color=gameGrid.GREEN;
+                }
+                else{
+                    gameGrid.gridBox.color=gameGrid.RED;
+                }
+            };
+            canvas.onmousedown = function (ev) {
+                var oldComponentId=gameGrid.gameComponentsId(playArea.mousePosition);
+                if(oldComponentId&&oldComponentId.length>2){
+                    playArea.playAreaComponentsClearById(oldComponentId);
+                    gameGrid.gameClearById(oldComponentId);
+                }
+            };
+            canvas.onmouseout = function (ev) {
+                clearInterval(drawAllHandler);
+                gameGrid.gridBox.color=gameGrid.WHITE;
+                playArea.drawAll();
+                canvas.onmousemove=null;
+            };
+        }
+        else if(game.modes===4){
+            console.log(gameGrid.gridBoxs);
+            game.state=0;
+            drawAllHandler=setInterval(function () {
+                playArea.drawAll();
+            },20);
+            var clickEventIsOk=true;
+            var outEventIsOk=true;
+            var moveFlag=true;//在移动的删除阶段(true)还是放置阶段(false)
+            gameGridBox.gridBoxSize=[1,1];
+            canvas.onmousemove = function (ev) {
+                //获取鼠标在游戏网格中的位置
+                gameGrid.gridBox.color=gameGrid.GREEN;
+                var x=ev.clientX;
+                var y=ev.clientY;
+                var rect=ev.target.getBoundingClientRect();
+                x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
+                y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
+                playArea.mousePosition=[x,y];
+                //更新物体的center和检查是否重叠
+                switch (game.state){
+                    case 1: {
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                        gameGridBox.gridBoxSize=[gameComponents.size,gameComponents.size];
+                        if(gameGrid.compatibleBoxs(gameComponents,1)){
+                            gameGridBox.color=gameGrid.GREEN;
+                            clickEventIsOk=true;
+                        }
+                        else{
+                            gameGridBox.color=gameGrid.RED;
+                            clickEventIsOk=false;
+                        }
+                        break;
+                    }
+                    case 2: {
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                        gameGridBox.gridBoxSize=[gameComponents.size,gameComponents.size];
+                        if(gameGrid.compatibleBoxs(gameComponents,1)){
+                            gameGridBox.color=gameGrid.GREEN;
+                            clickEventIsOk=true;
+                        }
+                        else{
+                            gameGridBox.color=gameGrid.RED;
+                            clickEventIsOk=false;
+                        }
+                        break;
+                    }
+                    case 3: {
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                        gameGridBox.gridBoxSize=[gameComponents.size,gameComponents.size];
+                        if(gameGrid.compatibleBoxs(gameComponents,1)){
+                            gameGridBox.color=gameGrid.GREEN;
+                            clickEventIsOk=true;
+                        }
+                        else{
+                            gameGridBox.color=gameGrid.RED;
+                            clickEventIsOk=false;
+                        }
+                        break;
+                    }
+                    case 4: {
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                        gameGridBox.gridBoxSize=[gameComponents.size,gameComponents.size];
+                        if(gameGrid.compatibleBoxs(gameComponents,1)){
+                            gameGridBox.color=gameGrid.GREEN;
+                            clickEventIsOk=true;
+                        }
+                        else{
+                            gameGridBox.color=gameGrid.RED;
+                            clickEventIsOk=false;
+                        }
+                        break;
+                    }
+                    case 7: {
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                        gameGridBox.gridBoxSize=[gameComponents.size,gameComponents.size];
+                        if(gameGrid.compatibleBoxs(gameComponents,2)){
+                            gameGridBox.color=gameGrid.GREEN;
+                            clickEventIsOk=true;
+                        }
+                        else{
+                            gameGridBox.color=gameGrid.RED;
+                            clickEventIsOk=false;
+                        }
+                        break;
+                    }
+                    case 8: {
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y]);
+                        gameGridBox.gridBoxSize=[gameComponents.size,gameComponents.size];
+                        if(gameGrid.compatibleBoxs(gameComponents,3)){
+                            gameGridBox.color=gameGrid.GREEN;
+                            clickEventIsOk=true;
+                        }
+                        else{
+                            gameGridBox.color=gameGrid.RED;
+                            clickEventIsOk=false;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            };
+            canvas.onmousedown = function (ev) {
+                if(moveFlag){
+                    var oldComponentId=gameGrid.gameComponentsId(playArea.mousePosition);
+                    if(oldComponentId&&oldComponentId.length>2){
+                        moveFlag=false;
+                        var oldComponent=playArea.playAreaComponentsClearById(oldComponentId);
+                        gameGrid.gameClearById(oldComponentId);
+                        switch (oldComponentId.substring(0,3)){
+                            case "Tri":{
+                                gameComponents=new Gizmo.Triangle();
+                                gameComponents.update(playArea.mousePosition);
+                                gameComponents.size=oldComponent.size;
+                                gameComponents.angel=oldComponent.angel;
+                                playArea.playAreaComponents.push(gameComponents);
+                                gameGridBox.gridBoxSize=[oldComponent.size,oldComponent.size];
+                                game.state=1;
+                                break;
+                            }
+                            case "Cir":{
+                                gameComponents=new Gizmo.Circle();
+                                gameComponents.update(playArea.mousePosition);
+                                gameComponents.size=oldComponent.size;
+                                gameComponents.angel=oldComponent.angel;
+                                playArea.playAreaComponents.push(gameComponents);
+                                gameGridBox.gridBoxSize=[oldComponent.size,oldComponent.size];
+                                game.state=2;
+                                break;
+                            }
+                            case "Bal":{
+                                gameComponents=new Gizmo.Ball();
+                                gameComponents.update(playArea.mousePosition);
+                                gameComponents.size=oldComponent.size;
+                                gameComponents.angel=oldComponent.angel;
+                                gameComponents.scaleSize=oldComponent.scaleSize;
+                                playArea.playAreaComponents.push(gameComponents);
+                                gameGridBox.gridBoxSize=[oldComponent.size,oldComponent.size];
+                                game.state=3;
+                                break;
+                            }
+                            case "Baf":{
+                                gameComponents=new Gizmo.Baffle();
+                                gameComponents.update(playArea.mousePosition);
+                                gameComponents.size=oldComponent.size;
+                                gameComponents.angel=oldComponent.angel;
+                                playArea.playAreaComponents.push(gameComponents);
+                                gameGridBox.gridBoxSize=[oldComponent.size,oldComponent.size];
+                                game.state=4;
+                                break;
+                            }
+                            case "Lef":{
+                                gameComponents=new Gizmo.LeftBaffle();
+                                gameComponents.update(playArea.mousePosition);
+                                gameComponents.size=oldComponent.size;
+                                playArea.playAreaComponents.push(gameComponents);
+                                gameGridBox.gridBoxSize=[oldComponent.size,oldComponent.size];
+                                game.state=7;
+                                break;
+                            }
+                            case "Rig":{
+                                gameComponents=new Gizmo.RightBaffle();
+                                gameComponents.update(playArea.mousePosition);
+                                gameComponents.size=oldComponent.size;
+                                playArea.playAreaComponents.push(gameComponents);
+                                gameGridBox.gridBoxSize=[oldComponent.size,oldComponent.size];
+                                game.state=8;
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                    }
+                }
+                else{
+                    switch (game.state){
+                        case 1:{
+                            if(clickEventIsOk){
+                                gameComponents.fixFlag=true;
+                                clickEventIsOk=false;
+                                game.state=0;
+                                gameGrid.fillGridBoxs(gameComponents,1);
+                                gameGridBox.gridBoxSize=[1,1];
+                                setTimeout(function () {
+                                    moveFlag=true;
+                                },500);
+                            }
+                            break;
+                        }
+                        case 2:{
+                            if(clickEventIsOk){
+                                gameComponents.fixFlag=true;
+                                clickEventIsOk=false;
+                                game.state=0;
+                                moveFlag=true;
+                                gameGrid.fillGridBoxs(gameComponents,1);
+                                gameGridBox.gridBoxSize=[1,1];
+                                setTimeout(function () {
+                                    moveFlag=true;
+                                },500);
+                            }
+                            break;
+                        }
+                        case 3:{
+                            if(clickEventIsOk){
+                                gameComponents.fixFlag=true;
+                                clickEventIsOk=false;
+                                game.state=0;
+                                moveFlag=true;
+                                gameGrid.fillGridBoxs(gameComponents,1);
+                                gameGridBox.gridBoxSize=[1,1];
+                                setTimeout(function () {
+                                    moveFlag=true;
+                                },500);
+                            }
+                            break;
+                        }
+                        case 4:{
+                            if(clickEventIsOk){
+                                gameComponents.fixFlag=true;
+                                clickEventIsOk=false;
+                                game.state=0;
+                                moveFlag=true;
+                                gameGrid.fillGridBoxs(gameComponents,1);
+                                gameGridBox.gridBoxSize=[1,1];
+                                setTimeout(function () {
+                                    moveFlag=true;
+                                },500);
+                            }
+                            break;
+                        }
+                        case 7:{
+                            if(clickEventIsOk){
+                                gameComponents.fixFlag=true;
+                                clickEventIsOk=false;
+                                game.state=0;
+                                moveFlag=true;
+                                gameGrid.fillGridBoxs(gameComponents,2);
+                                gameGridBox.gridBoxSize=[1,1];
+                                setTimeout(function () {
+                                    moveFlag=true;
+                                },500);
+                            }
+                            break;
+                        }
+                        case 8:{
+                            if(clickEventIsOk){
+                                gameComponents.fixFlag=true;
+                                clickEventIsOk=false;
+                                game.state=0;
+                                moveFlag=true;
+                                gameGrid.fillGridBoxs(gameComponents,3);
+                                gameGridBox.gridBoxSize=[1,1];
+                                setTimeout(function () {
+                                    moveFlag=true;
+                                },500);
+                            }
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                }
+            };
+            canvas.onmouseout = function (ev) {
+                clearInterval(drawAllHandler);
+                gameGrid.gridBox.color=gameGrid.WHITE;
+                //在game.state=0(已经放置下来以后)的时候，不用pop
                 if(game.state===1)
                     playArea.playAreaComponents.pop();
                 if(game.state===2)
@@ -482,6 +811,27 @@ function main2() {
     });
     //停止
     document.getElementById("stop").addEventListener("click",function () {
+        game.modes=0;
+        if(runAllHandler)
+            clearInterval(runAllHandler);
+        window.removeEventListener('keydown', doKeyDown, true);
+    });
+    //删除
+    document.getElementById("delete").addEventListener("click",function () {
+        game.modes=3;
+        if(runAllHandler)
+            clearInterval(runAllHandler);
+        window.removeEventListener('keydown', doKeyDown, true);
+    });
+    //移动
+    document.getElementById("move").addEventListener("click",function () {
+        game.modes=4;
+        if(runAllHandler)
+            clearInterval(runAllHandler);
+        window.removeEventListener('keydown', doKeyDown, true);
+    });
+    //放置
+    document.getElementById("set").addEventListener("click",function () {
         game.modes=0;
         if(runAllHandler)
             clearInterval(runAllHandler);

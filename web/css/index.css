@@ -10,5 +10,11 @@ canvas{box-shadow: .2em .2em .2em 0 hsla(0,0%,50%,.5);cursor: pointer;}
 .content-tool{width:20em;height: 100%;border-right: 1px solid #333;}
 
 #run{user-select: none;}
+#move{user-select: none;}
+#delete{user-select: none;}
+#set{user-select: none;}
+#stop{user-select: none;}
+
+
 
 
