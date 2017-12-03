@@ -67,6 +67,11 @@ public class Index extends HttpServlet {
                 printWriter.print("{\"resultCode\":true,\"value\":" + result + "}");
                 printWriter.close();
                 break;
+            case "test":
+                value = (String) req.getParameter("value");
+                printWriter.print("{\"value\":" + value + "}");
+                printWriter.close();
+                break;
             default:
                 printWriter.print("456456");
                 printWriter.close();
