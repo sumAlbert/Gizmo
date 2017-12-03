@@ -24,9 +24,13 @@ public class Index extends HttpServlet {
             case "save":
                 value = (String) req.getParameter("value");
                 try {
-                    ResultSet rs = stmt.executeQuery("select count(*) from data");
-                    String i = Integer.toString(rs.getInt(1) + 1);
-                    stmt.executeUpdate("insert into sceneData (userId,sceneId,configure) VALUES (\"" + userId + "\",\"" + i + "\",\"" + value + "\")");
+                    ResultSet rs = stmt.executeQuery("select count(*) from scenedata");
+                    String i="0";
+                    while (rs.next()){
+                        i= Integer.toString(rs.getInt(1) + 1);
+                    }
+                    System.out.println(("insert into scenedata (userId,sceneId,configure) VALUES (\"" + userId + "\",\"" + i + "\",\"" + value + "\")"));
+                    stmt.executeUpdate("insert into scenedata (userId,sceneId,configure) VALUES ('" + userId + "','" + i + "','" + value + "')");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
