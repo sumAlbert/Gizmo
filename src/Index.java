@@ -29,7 +29,7 @@ public class Index extends HttpServlet {
                         i = Integer.toString(Integer.parseInt(rs.getString(1)) + 1);
                     }
                     System.out.println(i);
-                    String pathName = "D:/" + userId + "-" + i+".txt";
+                    String pathName = "D:/gizmoSave/" + userId + "-" + i+".txt";
                     File f = new File(pathName);
                     if (!f.exists()) {
                         f.createNewFile();

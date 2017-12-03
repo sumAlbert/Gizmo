@@ -101,6 +101,7 @@ function main2() {
             currentUploadComponent.id=currentComponent.id;
             currentUploadComponent.color=currentComponent.color;
             currentUploadComponent.fixFlag=currentComponent.fixFlag;
+            currentUploadComponent.angel=currentComponent.angel;
             if((currentComponent instanceof Track)||(currentComponent instanceof Absorber)){
                 currentUploadComponent.centers=currentComponent.centers;
             }
@@ -915,37 +916,65 @@ function main2() {
         physicsEngine=new Gizmo.PhysicsEngine();
         clearInterval(runAllHandler);
         clearInterval(drawAllHandler);
-        gameGrid.gridBoxs=gridBoxs;
-        for(var item in attachmentInfo){
-            var currentComponent=attachmentInfo[item];
-            switch (currentComponent.id.substring(0,3)){
-                case "Gam":{
-                    if(currentComponent.id.substring(0,9)==="GameGridB"){//单个格子
-                        gameGridBox.id=currentComponent.id;
-                        gameGridBox.color=currentComponent.color;
+        setTimeout(function () {
+            gameGrid.gridBoxs=gridBoxs;
+            for(var item in attachmentInfo){
+                var currentComponent=attachmentInfo[item];
+                switch (currentComponent.id.substring(0,3)){
+                    case "Gam":{
+                        if(currentComponent.id.substring(0,9)==="GameGridB"){//单个格子
+                            gameGridBox.id=currentComponent.id;
+                            gameGridBox.color=currentComponent.color;
+                        }
+                        else{//网格
+                            gameGrid.id=currentComponent.id;
+                            gameGrid.color=currentComponent.color;
+                        }
+                        break;
                     }
-                    else{//网格
-                        gameGrid.id=currentComponent.id;
-                        gameGrid.color=currentComponent.color;
+                    case "Tri":{
+                        var triangle=new Gizmo.Triangle();
+                        triangle.id=currentComponent.id;
+                        triangle.center=currentComponent.center;
+                        triangle.size=currentComponent.size;
+                        triangle.color=currentComponent.color;
+                        triangle.fixFlag=currentComponent.fixFlag;
+                        triangle.angel=currentComponent.angel;
+                        triangle.vertexsByCenter();
+                        playArea.playAreaComponents.push(triangle);
+                        break;
                     }
-                    break;
+                    case "Cir":{
+                        var circle=new Gizmo.Circle();
+                        circle.id=currentComponent.id;
+                        circle.center=currentComponent.center;
+                        circle.size=currentComponent.size;
+                        circle.color=currentComponent.color;
+                        circle.fixFlag=currentComponent.fixFlag;
+                        circle.angel=currentComponent.angel;
+                        circle.vertexsByCenter();
+                        playArea.playAreaComponents.push(circle);
+                        break;
+                    }
+                    case "Bal":{
+                        var ball=new Gizmo.Ball();
+                        ball.id=currentComponent.id;
+                        ball.center=currentComponent.center;
+                        ball.size=currentComponent.size;
+                        ball.color=currentComponent.color;
+                        ball.fixFlag=currentComponent.fixFlag;
+                        ball.angel=currentComponent.angel;
+                        ball.sizeScal=currentComponent.sizeScal;
+                        ball.vertexsByCenter();
+                        playArea.playAreaComponents.push(ball);
+                        break;
+                    }
+                    default:
+                        break;
                 }
-                case "Tri":{
-                    var triangle=new Gizmo.Triangle();
-                    triangle.id=currentComponent.id;
-                    triangle.center=currentComponent.center;
-                    triangle.size=currentComponent.size;
-                    triangle.color=currentComponent.color;
-                    triangle.fixFlag=currentComponent.fixFlag;
-                    triangle.updateCenters();
-                    playArea.playAreaComponents.push(triangle);
-                    break;
-                }
-                default:
-                    break;
             }
-        }
-        console.log(playArea.playAreaComponents);
-        playArea.drawAll();
+            console.log(playArea.playAreaComponents);
+            playArea.drawAll();
+        },1000);
     }
 }

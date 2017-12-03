@@ -500,6 +500,16 @@ Gizmo=(function () {
                 this.update(mousePosition);
             this.drawComponents(gl,gl.TRIANGLE_FAN,this.verticesArray.length/2);
         };
+        this.vertexsByCenter=function () {
+            this.verticesArray=[];
+            var n=128;
+            for(var i=0;i<n;i++){
+                var radian=Math.PI*2*i/n;
+                var cosB=Math.cos(radian);
+                var sinB=Math.sin(radian);
+                this.verticesArray.push(this.center[0]+0.1*this.size*cosB/2,this.center[1]+0.1*this.size*sinB/2);
+            }
+        }
     };
 
     this.Triangle=function () {
@@ -526,7 +536,7 @@ Gizmo=(function () {
                 this.update(mousePosition);
             this.drawComponents(gl,gl.TRIANGLES,3);
         };
-        this.updateCenters=function () {
+        this.vertexsByCenter=function () {
             this.verticesArray=[];
             this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]+0.05*this.size);
             this.verticesArray.push(this.center[0]-0.05*this.size,this.center[1]-0.05*this.size);
