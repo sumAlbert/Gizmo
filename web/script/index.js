@@ -97,10 +97,18 @@ function main2() {
             currentUploadComponent.size=currentComponent.size;
             currentUploadComponent.center=currentComponent.center;
             currentUploadComponent.id=currentComponent.id;
+            currentUploadComponent.color=currentComponent.color;
             if((currentComponent instanceof Track)||(currentComponent instanceof Absorber)){
                 currentUploadComponent.centers=currentComponent.centers;
             }
+            if((currentComponent instanceof Ball)){
+                currentUploadComponent.scaleSize=currentComponent.scaleSize;
+            }
+            attachmentInfo.push(currentUploadComponent);
         }
+        uploadInfo.attachmentInfo=attachmentInfo;
+        var uploadInfoStr=JSON.stringify(uploadInfo);
+
     });
     // 鼠标移动事件监听
     canvas.onmouseover=function (ev) {
