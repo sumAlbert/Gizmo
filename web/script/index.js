@@ -71,6 +71,8 @@ function main2() {
     var gameGridBox=gameGrid.gridBox;
     var canvas=document.getElementById("playArea");
     var physicsEngine=new Gizmo.PhysicsEngine();
+    runAllHandler=function () {};
+    drawAllHandler=function () {};
 
 
     //点击新建事件
@@ -112,17 +114,22 @@ function main2() {
            type: 'post',
            url: 'Index',
            data:{
-               command:'save',
+               command:'test',
                userId:'1',
                value:uploadInfoStr
            },
            success: function (data) {
-               console.log(data);
+               var JSON_data=JSON.parse(data);
+               buildByFile(JSON_data);
            },
            error: function () {
                console.log("error")
            }
        })
+    });
+    //点击打开事件
+    document.getElementById("open-playArea").addEventListener("click",function () {
+        console.log("open-playArea");
     });
     // 鼠标移动事件监听
     canvas.onmouseover=function (ev) {
@@ -897,7 +904,45 @@ function main2() {
         // }
     }
     
-    // function  uploadFinish() {
-    //
-    // }
+    function  buildByFile(JSON_data) {
+        console.log(JSON_data);
+        var attachmentInfo=JSON_data.value.attachmentInfo;
+        var gridBoxs=JSON_data.value.gridBoxs;
+        game.modes=0;
+        game.state=0;
+        playArea.init();
+        physicsEngine=new Gizmo.PhysicsEngine();
+        clearInterval(runAllHandler);
+        clearInterval(drawAllHandler);
+        gameGrid.gridBoxs=gridBoxs;
+        for(var item in attachmentInfo){
+            var currentComponent=attachmentInfo[item];
+            switch (currentComponent.id.substring(0,3)){
+                case "Gam":{
+                    if(currentComponent.id.substring(0,9)==="GameGridB"){//单个格子
+                        gameGridBox.id=currentComponent.id;
+                        gameGridBox.color=currentComponent.color;
+                    }
+                    else{//网格
+                        gameGrid.id=currentComponent.id;
+                        gameGrid.color=currentComponent.color;
+                    }
+                    break;
+                }
+                case "Tri":{
+                    var triangle=new Gizmo.Triangle();
+                    triangle.id=currentComponent.id;
+                    triangle.center=currentComponent.center;
+                    triangle.size=currentComponent.size;
+                    triangle.color=currentComponent.color;
+                    playArea.playAreaComponents.push(triangle);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+        console.log(playArea.playAreaComponents);
+        playArea.drawAll();
+    }
 }
