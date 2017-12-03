@@ -597,21 +597,25 @@ Gizmo=(function () {
             this.verticesArray=[];
             var x_start=-1.0;
             while(Math.abs(x_start-1.0)>0.0001){
-                x_start=x_start+0.1;
                 this.verticesArray.push(x_start,-1.0);
                 this.verticesArray.push(x_start,1.0);
+                x_start=x_start+0.1;
             }
             x_start=-1.0;
             while(Math.abs(x_start-1.0)>0.0001){
-                x_start=x_start+0.1;
                 this.verticesArray.push(-1.0,x_start);
                 this.verticesArray.push(1.0,x_start);
+                x_start=x_start+0.1;
             }
+            this.verticesArray.push(-0.999999,0.999999);
+            this.verticesArray.push(0.999999,0.999999);
+            this.verticesArray.push(0.999999,-0.999999);
+            this.verticesArray.push(0.999999,0.999999);
         };
         this.draw=function (gl,mousePosition) {
             if(!this.fixFlag)
                 this.update(mousePosition);
-            this.drawComponents(gl,gl.LINES,80);
+            this.drawComponents(gl,gl.LINES,this.verticesArray.length/2);
         };
         this.fillGridBoxs=function (component,kind) {
             switch (kind){
