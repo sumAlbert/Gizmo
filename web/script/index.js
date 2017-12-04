@@ -1,69 +1,4 @@
 function main() {
-    var canvas=document.getElementById("playArea");
-    var gl = getWebGLContext(canvas);
-    if(!gl){
-        console.log("Fail to get the rendering context for Webgl");
-        return;
-    }
-    var program = createProgram(gl,Gizmo.SHADERS[0].VASHADER_SOURCE,Gizmo.SHADERS[0].FASHADER_SOURCE);
-    if(!program){
-        console.log('Failed to create program');
-    }
-    gl.useProgram(program);
-    gl.program = program;
-    gl.clearColor(0.0,0.0,0.0,1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    var ANGLE=0;
-    var xformMatrix = new Matrix4();
-    var xrecoverMatrix =new Matrix4();
-    // xformMatrix.setTranslate(0,-0.7,0);
-    xformMatrix.setRotate(ANGLE,0,0,1);
-    xformMatrix.translate(0.5,-0.7,0);//(-x,-y,)
-    xrecoverMatrix.translate(-0.5,0.7,0);//(x,y,)
-    var u_xformMatrix = gl.getUniformLocation(gl.program,'u_xformMatrix');
-    var u_recoverMatrix = gl.getUniformLocation(gl.program,'u_recoverMatrix');
-    var a_Position = gl.getAttribLocation(gl.program,'a_Position');
-    var a_PointSize = gl.getAttribLocation(gl.program,'a_PointSize');
-    var u_FragColor = gl.getUniformLocation(gl.program,'u_FragColor');
-    if(a_Position < 0){
-        console.log("Failed to get the storage location of a_Position");
-    }
-    var vertexBuffer = gl.createBuffer();
-    var vertices = new Float32Array([
-        -1.0, 0.7, -1.0, 0.0, 0.0, 0.0,0.0, 0.7
-    ]);
-    if(!vertexBuffer){
-        console.log('Failed to create the buffer object');
-    }
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER,vertices,gl.STATIC_DRAW);
-    gl.vertexAttribPointer(a_Position,2, gl.FLOAT,false, 0, 0);
-    gl.enableVertexAttribArray(a_Position);
-    gl.uniform4f(u_FragColor,1.0,1.0,0.0,1.0);
-    gl.uniformMatrix4fv(u_xformMatrix, false, xformMatrix.elements);
-    gl.uniformMatrix4fv(u_recoverMatrix, false, xrecoverMatrix.elements);
-    gl.vertexAttrib1f(a_PointSize,5.0);
-    gl.drawArrays(gl.POINTS,0,3);
-    // var vertices = new Float32Array([
-    //     0.0, 0.25, -0.25, -0.25, 0.25, -0.25
-    // ]);
-    gl.uniform4f(u_FragColor,1.0,0.0,0.0,1.0);
-    gl.bufferData(gl.ARRAY_BUFFER,vertices,gl.STATIC_DRAW);
-    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
-
-
-    canvas.onmousedown = function (ev) {
-        var x=ev.clientX;
-        var y=ev.clientY;
-        var rect=ev.target.getBoundingClientRect();
-        x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
-        y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
-        console.log([x,y]);
-    };
-}
-
-function main2() {
     var game=new Gizmo.Game();
     var playArea=game.playArea;
     var gameGrid=playArea.gameGrid;
@@ -178,10 +113,56 @@ function main2() {
     //网格颜色修改事件
     document.getElementById("changeColorGridBox").addEventListener("input",function () {
         var changeInput=document.getElementById("changeColorGridBox");
-        console.log(changeInput.value);
         document.getElementById("symbolBox-gridBox").style.cssText="background:"+changeInput.value;
-        document.getElementById("changeColorGridBox").offsetParent.style.cssText="color:"+changeInput.value;
         gameGrid.color= HexToFloat(changeInput.value);
+        playArea.drawAll();
+    },false);
+    //三角形颜色改变事件监听
+    document.getElementById("changeTri").addEventListener("input",function () {
+        var changeInput=document.getElementById("changeTri");
+        document.getElementById("symbolBox-tri").style.cssText="background:"+changeInput.value;
+        playArea.drawAll();
+    },false);
+    //圆形颜色改变事件监听
+    document.getElementById("changeCir").addEventListener("input",function () {
+        var changeInput=document.getElementById("changeCir");
+        document.getElementById("symbolBox-cir").style.cssText="background:"+changeInput.value;
+        playArea.drawAll();
+    },false);
+    //小球颜色改变事件监听
+    document.getElementById("changeBal").addEventListener("input",function () {
+        var changeInput=document.getElementById("changeBal");
+        document.getElementById("symbolBox-bal").style.cssText="background:"+changeInput.value;
+        playArea.drawAll();
+    },false);
+    //挡板颜色改变事件监听
+    document.getElementById("changeBaf").addEventListener("input",function () {
+        var changeInput=document.getElementById("changeBaf");
+        document.getElementById("symbolBox-baf").style.cssText="background:"+changeInput.value;
+        playArea.drawAll();
+    },false);
+    //吸收器颜色改变事件监听
+    document.getElementById("changeAbs").addEventListener("input",function () {
+        var changeInput=document.getElementById("changeAbs");
+        document.getElementById("symbolBox-abs").style.cssText="background:"+changeInput.value;
+        playArea.drawAll();
+    },false);
+    //轨道颜色改变事件监听
+    document.getElementById("changeTra").addEventListener("input",function () {
+        var changeInput=document.getElementById("changeTra");
+        document.getElementById("symbolBox-tra").style.cssText="background:"+changeInput.value;
+        playArea.drawAll();
+    },false);
+    //左挡板颜色改变事件监听
+    document.getElementById("changeLef").addEventListener("input",function () {
+        var changeInput=document.getElementById("changeLef");
+        document.getElementById("symbolBox-lef").style.cssText="border-left: 2px solid"+changeInput.value;
+        playArea.drawAll();
+    },false);
+    //右挡板颜色改变事件监听
+    document.getElementById("changeRig").addEventListener("input",function () {
+        var changeInput=document.getElementById("changeRig");
+        document.getElementById("symbolBox-rig").style.cssText="border-right: 2px solid"+changeInput.value;
         playArea.drawAll();
     },false);
     // 鼠标移动事件监听
@@ -204,6 +185,7 @@ function main2() {
                     if(!isNaN(document.getElementById("tool-item1-angel").value)){
                         triangle.angel=document.getElementById("tool-item1-angel").value;
                     }
+                    triangle.color=HexToFloat(document.getElementById("changeTri").value);
                     playArea.playAreaComponents.push(triangle);
                     gameGridBox.gridBoxSize=[triangle.size,triangle.size];
                     break;
@@ -217,6 +199,7 @@ function main2() {
                     if(!isNaN(document.getElementById("tool-item2-angel").value)){
                         circle.angel=document.getElementById("tool-item2-angel").value;
                     }
+                    circle.color=HexToFloat(document.getElementById("changeCir").value);
                     playArea.playAreaComponents.push(circle);
                     gameGridBox.gridBoxSize=[circle.size,circle.size];
                     break;
@@ -230,6 +213,7 @@ function main2() {
                     if(!isNaN(document.getElementById("tool-item3-angel").value)){
                         ball.angel=document.getElementById("tool-item3-angel").value;
                     }
+                    ball.color=HexToFloat(document.getElementById("changeBal").value);
                     playArea.playAreaComponents.push(ball);
                     gameGridBox.gridBoxSize=[ball.size,ball.size];
                     break;
@@ -243,6 +227,7 @@ function main2() {
                     if(!isNaN(document.getElementById("tool-item4-angel").value)){
                         baffle.angel=document.getElementById("tool-item4-angel").value;
                     }
+                    baffle.color=HexToFloat(document.getElementById("changeBaf").value);
                     playArea.playAreaComponents.push(baffle);
                     gameGridBox.gridBoxSize=[baffle.size,baffle.size];
                     break;
@@ -253,6 +238,7 @@ function main2() {
                     if(!isNaN(document.getElementById("tool-item5-size").value)){
                         absorber.size=document.getElementById("tool-item5-size").value;
                     }
+                    absorber.color=HexToFloat(document.getElementById("changeAbs").value);
                     playArea.playAreaComponents.push(absorber);
                     gameGridBox.gridBoxSize=[absorber.size,absorber.size];
                     break;
@@ -264,6 +250,7 @@ function main2() {
                     if(!isNaN(document.getElementById("tool-item6-size").value)){
                         track.size=document.getElementById("tool-item6-size").value;
                     }
+                    track.color=HexToFloat(document.getElementById("changeTra").value);
                     playArea.playAreaComponents.push(track);
                     gameGridBox.gridBoxSize=[track.size,track.size];
                     break;
@@ -274,6 +261,7 @@ function main2() {
                     if(!isNaN(document.getElementById("tool-item7-size").value)){
                         leftBaffle.size=document.getElementById("tool-item7-size").value;
                     }
+                    leftBaffle.color=HexToFloat(document.getElementById("changeLef").value);
                     playArea.playAreaComponents.push(leftBaffle);
                     gameGridBox.gridBoxSize=[leftBaffle.size,leftBaffle.size];
                     break;
@@ -284,6 +272,7 @@ function main2() {
                     if(!isNaN(document.getElementById("tool-item8-size").value)){
                         rightBaffle.size=document.getElementById("tool-item8-size").value;
                     }
+                    rightBaffle.color=HexToFloat(document.getElementById("changeRig").value);
                     playArea.playAreaComponents.push(rightBaffle);
                     gameGridBox.gridBoxSize=[rightBaffle.size,rightBaffle.size];
                     break;
@@ -456,10 +445,12 @@ function main2() {
                     }
                     case 5:{
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=true;
+                        outEventIsOk=false;
                         break;
                     }
                     case 6:{
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=true;
+                        outEventIsOk=false;
                         break;
                     }
                     case 7:{
@@ -492,8 +483,12 @@ function main2() {
                         absorber.fixFlag=true;
                         outEventIsOk=false;
                         game.state=0;
-                        gameGrid.fillGridBoxs(absorber,2);
+                        gameGrid.fillGridBoxs(absorber,4);
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=false;
+                    }
+                    else{
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=false;
+                        playArea.drawAll();
                     }
                 }
                 if(game.state===6){
@@ -501,8 +496,12 @@ function main2() {
                         track.fixFlag=true;
                         outEventIsOk=false;
                         game.state=0;
-                        gameGrid.fillGridBoxs(track,2);
+                        gameGrid.fillGridBoxs(track,4);
                         playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=false;
+                    }
+                    else{
+                        playArea.playAreaComponents[playArea.playAreaComponents.length - 1].startFlag=false;
+                        playArea.drawAll();
                     }
                 }
             };
@@ -978,6 +977,7 @@ function main2() {
         document.getElementById("mainHidden").style.cssText="";
     });
 
+    //控制按键监听
     doKeyDown=function doKeyDown(e) {
         var keyID = e.keyCode ? e.keyCode :e.which;
         playArea.receiveKeyDown(keyID);
@@ -994,7 +994,8 @@ function main2() {
         //     console.log('456');
         // }
     };
-    
+
+    //根据JSON数据生成场景
     function  buildByFile(JSON_data) {
         console.log(JSON_data);
         var attachmentInfo=JSON_data.value.attachmentInfo;
@@ -1129,7 +1130,7 @@ function main2() {
         },1000);
     }
 
-
+    //十六进制颜色归一化
     function HexToFloat(value) {
         var color=[,,,1.0];
         color[0]=parseInt(value.substring(1,3),16)/255;
@@ -1140,7 +1141,6 @@ function main2() {
     
     function init() {
         document.getElementById("symbolBox-gridBox").style.cssText="background:#87cefa";
-        document.getElementById("changeColorGridBox").offsetParent.style.cssText="color:#87cefa";
         gameGrid.color= HexToFloat("#87cefa");
     }
 }

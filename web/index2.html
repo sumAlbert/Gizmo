@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width,maximum-scale=1.0,minimum-scale=1.0">
     <link type="text/css" href="css/index.css" rel="stylesheet">
 </head>
-<body onload="main2()">
+<body onload="main()">
     <div class="main" id="main">
         <div class="title-part">
             <div class="title-icon">0</div>
@@ -135,7 +135,7 @@
                             <div class="symbolBox-bal" id="symbolBox-bal">
                             </div>
                             <div class="changeColorBox">
-                                <input type="color" id="changebal">
+                                <input type="color" id="changeBal">
                                 修改颜色
                             </div>
                         </div>
@@ -167,9 +167,11 @@
                     <div class="content-tool-item-content" id="toolContent-baf">
                         <div class="toolContent-line">
                             <div class="symbolBox-baf" id="symbolBox-baf">
+                                <div class="symbolBox-baf-filler1"></div>
+                                <div class="symbolBox-baf-filler2"></div>
                             </div>
                             <div class="changeColorBox">
-                                <input type="color" id="changebaf">
+                                <input type="color" id="changeBaf">
                                 修改颜色
                             </div>
                         </div>
@@ -203,7 +205,7 @@
                             <div class="symbolBox-abs" id="symbolBox-abs">
                             </div>
                             <div class="changeColorBox">
-                                <input type="color" id="changeabs">
+                                <input type="color" id="changeAbs">
                                 修改颜色
                             </div>
                         </div>
@@ -237,7 +239,7 @@
                             <div class="symbolBox-tra" id="symbolBox-tra">
                             </div>
                             <div class="changeColorBox">
-                                <input type="color" id="changetra">
+                                <input type="color" id="changeTra">
                                 修改颜色
                             </div>
                         </div>
@@ -271,7 +273,7 @@
                             <div class="symbolBox-lef" id="symbolBox-lef">
                             </div>
                             <div class="changeColorBox">
-                                <input type="color" id="changelef">
+                                <input type="color" id="changeLef">
                                 修改颜色
                             </div>
                         </div>
@@ -305,7 +307,7 @@
                             <div class="symbolBox-rig" id="symbolBox-rig">
                             </div>
                             <div class="changeColorBox">
-                                <input type="color" id="changerig">
+                                <input type="color" id="changeRig">
                                 修改颜色
                             </div>
                         </div>
@@ -359,6 +361,7 @@
 <script src="./script/cuon-utils.js"></script>
 <script src="./script/webgl-debug.js"></script>
 <script src="./script/webgl-utils.js"></script>
+<script src="script/jquery-3.2.1.min.js"></script>
 <script src="script/class/Gizmo.js"></script>
 <script src="script/index.js"></script>
 </html>

@@ -55,11 +55,16 @@ input{height: 100%;width: 100%;outline: none;position: absolute;border:none;padd
 .symbolBox-cir{cursor: pointer;border-radius: 50% 50%;background: white;line-height: 2em;height: 2em;width: 2em;display: inline-block;}
 /*bal*/
 .symbolBox-bal{cursor: pointer;border-radius: 50% 50%;background: white;line-height: 2em;height: 2em;width: 2em;display: inline-block;}
-.symbolBox-baf{cursor: pointer;background: white;line-height: 2em;height: 2em;width: 2em;display: inline-block;}
+/*baf*/
+.symbolBox-baf{cursor: pointer;background: white;line-height: 2em;height: 2em;width: 2em;display: inline-block;position: relative;}
+.symbolBox-baf-filler1{background: #060709;position: absolute;width: 100%;height: 44%;top: 0;}
+.symbolBox-baf-filler2{background: #060709;position: absolute;width: 100%;height: 44%;bottom: 0;}
+/*abs*/
 .symbolBox-abs{cursor: pointer;background: white;line-height: 2em;height: 2em;width: 2em;display: inline-block;}
 .symbolBox-tra{cursor: pointer;background: white;line-height: 2em;height: 2em;width: 2em;display: inline-block;}
 .symbolBox-lef{cursor: pointer;line-height: 2em;height: 2em;width: 2em;display: inline-block;border-left: 2px solid white;}
 .symbolBox-rig{cursor: pointer;line-height: 2em;height: 2em;width: 2em;display: inline-block;border-right: 2px solid white;}
+
 
 #run{user-select: none;}
 #move{user-select: none;}

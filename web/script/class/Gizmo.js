@@ -691,6 +691,16 @@ Gizmo=(function () {
                     }
                     break;
                 }
+                case 4: {//吸收器和轨道
+                    for(var i=0;i<component.centers.length;i=i+2 ){
+                        var centerX=Math.floor(10*(component.centers[i]+0.01))+10;
+                        var centerY=Math.floor(10*(component.centers[i+1]+0.01))+10;
+                        var leftBottomX=centerX-(component.size-1)/2;
+                        var leftBottomY=centerY-(component.size-1)/2;
+                        this.gridBoxs[leftBottomX][leftBottomY]=component.id;
+                    }
+                    break;
+                }
                 default:
                     break;
             }
