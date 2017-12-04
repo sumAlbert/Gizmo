@@ -78,6 +78,7 @@ function main() {
             success: function (data) {
                 var JSON_data=JSON.parse(data);
                 var value=JSON_data.value;
+                document.getElementById("sceneList").innerHTML="";
                 for(let i in value){
                     let newDom=document.createElement("div");
                     newDom.innerHTML=value[i];
@@ -115,6 +116,20 @@ function main() {
         var changeInput=document.getElementById("changeColorGridBox");
         document.getElementById("symbolBox-gridBox").style.cssText="background:"+changeInput.value;
         gameGrid.color= HexToFloat(changeInput.value);
+        playArea.drawAll();
+    },false);
+    //网格盒子（ok）颜色修改事件
+    document.getElementById("changeColorGridBoxS").addEventListener("input",function () {
+        var changeInput=document.getElementById("changeColorGridBoxS");
+        document.getElementById("symbolBox-gridBoxS").style.cssText="border: 1px solid "+changeInput.value;
+        gameGrid.GREEN= HexToFloat(changeInput.value);
+        playArea.drawAll();
+    },false);
+    //网格盒子（no）颜色修改事件
+    document.getElementById("changeColorGridBoxSS").addEventListener("input",function () {
+        var changeInput=document.getElementById("changeColorGridBoxSS");
+        document.getElementById("symbolBox-gridBoxSS").style.cssText="border: 1px solid "+changeInput.value;
+        gameGrid.RED= HexToFloat(changeInput.value);
         playArea.drawAll();
     },false);
     //三角形颜色改变事件监听
@@ -354,6 +369,16 @@ function main() {
                                 playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y],false);
                             }
                         }
+                        else{
+                            if(gameGrid.compatibleBoxs(absorber,1)){
+                                gameGridBox.color=gameGrid.GREEN;
+                                outEventIsOk=true;
+                            }
+                            else{
+                                gameGridBox.color=gameGrid.RED;
+                                outEventIsOk=false;
+                            }
+                        }
                         break;
                     }
                     case 6: {
@@ -369,6 +394,16 @@ function main() {
                                 outEventIsOk=false;
                                 //需要根据center来判断是否覆盖冲突，所以需要一直update.true表示可以更新centers,false表示不能更新
                                 playArea.playAreaComponents[playArea.playAreaComponents.length - 1].update([x, y],false);
+                            }
+                        }
+                        else{
+                            if(gameGrid.compatibleBoxs(track,1)){
+                                gameGridBox.color=gameGrid.GREEN;
+                                outEventIsOk=true;
+                            }
+                            else{
+                                gameGridBox.color=gameGrid.RED;
+                                outEventIsOk=false;
                             }
                         }
                         break;
@@ -948,6 +983,11 @@ function main() {
                     addsDOM[i].parentNode.childNodes[5].childNodes[1].value=(addsDOM[i].parentNode.childNodes[5].childNodes[1].value-0)+1;
                 }
             }
+            else if(addsDOM[i].parentNode.childNodes[1].innerHTML==="角度"){
+                if(addsDOM[i].parentNode.childNodes[5].childNodes[1].value<270){
+                    addsDOM[i].parentNode.childNodes[5].childNodes[1].value=(addsDOM[i].parentNode.childNodes[5].childNodes[1].value-0)+90;
+                    document.getElementById("symbolBox-tri").style.transform="rotate(-"+addsDOM[i].parentNode.childNodes[5].childNodes[1].value+"deg)";                }
+            }
             else{
                 if(addsDOM[i].parentNode.childNodes[5].childNodes[1].value<270){
                     addsDOM[i].parentNode.childNodes[5].childNodes[1].value=(addsDOM[i].parentNode.childNodes[5].childNodes[1].value-0)+90;
@@ -964,6 +1004,12 @@ function main() {
                     addsDOM[i].parentNode.childNodes[5].childNodes[1].value=(addsDOM[i].parentNode.childNodes[5].childNodes[1].value-0)-1;
                 }
             }
+            else if(addsDOM[i].parentNode.childNodes[1].innerHTML==="角度") {
+                if(addsDOM[i].parentNode.childNodes[5].childNodes[1].value>0){
+                    addsDOM[i].parentNode.childNodes[5].childNodes[1].value=(addsDOM[i].parentNode.childNodes[5].childNodes[1].value-0)-90;
+                    document.getElementById("symbolBox-tri").style.transform="rotate(-"+addsDOM[i].parentNode.childNodes[5].childNodes[1].value+"deg)";
+                }
+            }
             else{
                 if(addsDOM[i].parentNode.childNodes[5].childNodes[1].value>0){
                     addsDOM[i].parentNode.childNodes[5].childNodes[1].value=(addsDOM[i].parentNode.childNodes[5].childNodes[1].value-0)-90;
@@ -976,7 +1022,6 @@ function main() {
         document.getElementById("main").style.cssText="";
         document.getElementById("mainHidden").style.cssText="";
     });
-
     //控制按键监听
     doKeyDown=function doKeyDown(e) {
         var keyID = e.keyCode ? e.keyCode :e.which;
@@ -994,7 +1039,6 @@ function main() {
         //     console.log('456');
         // }
     };
-
     //根据JSON数据生成场景
     function  buildByFile(JSON_data) {
         console.log(JSON_data);
@@ -1129,7 +1173,6 @@ function main() {
             playArea.drawAll();
         },1000);
     }
-
     //十六进制颜色归一化
     function HexToFloat(value) {
         var color=[,,,1.0];
@@ -1138,10 +1181,41 @@ function main() {
         color[2]=parseInt(value.substring(5,7),16)/255;
         return color;
     }
-    
+    //初始化函数
     function init() {
+        //gridBox
         document.getElementById("symbolBox-gridBox").style.cssText="background:#87cefa";
         gameGrid.color= HexToFloat("#87cefa");
+        //triangle
+        document.getElementById("symbolBox-tri").style.cssText="background: #ff80c0;";
+        document.getElementById("changeTri").value="#ff80c0";
+        //circle
+        document.getElementById("symbolBox-cir").style.cssText="background: #0080ff;";
+        document.getElementById("changeCir").value="#0080ff";
+        //ball
+        document.getElementById("symbolBox-bal").style.cssText="background: #ffffff;";
+        document.getElementById("changeBal").value="#ffffff";
+        //Baffle
+        document.getElementById("symbolBox-baf").style.cssText="background: #80ff80;";
+        document.getElementById("changeBaf").value="#80ff80";
+        //Absorber
+        document.getElementById("symbolBox-abs").style.cssText="background: #ffffff;";
+        document.getElementById("changeAbs").value="#ffffff";
+        //Track
+        document.getElementById("symbolBox-tra").style.cssText="background: #ff8040;";
+        document.getElementById("changeTra").value="#ff8040";
+        //LeftBaffle
+        document.getElementById("symbolBox-lef").style.cssText="border-left: 2px solid #e9e975;";
+        document.getElementById("changeLef").value="#e9e975";
+        //RightBaffle
+        document.getElementById("symbolBox-rig").style.cssText="border-right:2px solid #e9e975;";
+        document.getElementById("changeRig").value="#e9e975";
+        //GameGridBox(no)
+        document.getElementById("symbolBox-gridBoxSS").style.cssText="border:1px solid #ff0000;";
+        document.getElementById("changeColorGridBoxSS").value="#ff0000";
+        //GameGridBox(ok)
+        document.getElementById("symbolBox-gridBoxS").style.cssText="border:1px solid #00ff00;";
+        document.getElementById("changeColorGridBoxS").value="#00ff00";
     }
 }
 
@@ -1174,7 +1248,7 @@ function toolMenuControl(id){
             else{
                 toolMenuBar.setAttribute("data","true");
                 toolMenuBar.children[1].style.cssText="transform:rotate(0)";
-                toolContent.style.cssText="height: 2.7em";
+                toolContent.style.cssText="height: 5.4em";
             }
             break;
         }

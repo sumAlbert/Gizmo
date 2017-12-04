@@ -44,8 +44,9 @@ input{height: 100%;width: 100%;outline: none;position: absolute;border:none;padd
 .changeColorBox{display: inline-block;float: right;margin: 0 2em 0 0;position: relative;color: #2aaefa;top:0;left: 0;}
 .changeColorBox>input{opacity: 0;cursor: pointer;}
 /*gameGridS*/
-.symbolBox-gridBoxS{position: relative;width: 2em;line-height: 2em;height: 2em;display: inline-block;border: 1px solid #87cefa;}
-.symbolBox-tri{cursor: pointer;position: relative;width: 2em;line-height: 2em;height: 2em;display: inline-block;background:  #87cefa;clip-path: polygon(0% 0%, 100% 100%, 0% 100%)}
+.symbolBox-gridBoxS{position: relative;width: 2em;line-height: 2em;height: 2em;display: inline-block;border: 1px solid #87cefa;vertical-align: middle;}
+.symbolBox-gridBoxS-down{position: relative;line-height: 2em;height: 2em;vertical-align: middle;color: #aaa;display: inline-block;}
+.symbolBox-tri{cursor: pointer;position: relative;width: 2em;line-height: 2em;height: 2em;display: inline-block;background:  #87cefa;clip-path: polygon(0% 0%, 100% 0%, 0% 100%)}
 /*tri*/
 .inputBox-tri{position: relative;line-height: 2em;height: 2em;width: 2em;display: inline-block;float: right;}
 .tool-num-minus{display: inline-block;line-height: 2em;height: 2em;width: 2em;float: right;background: url("../img/minu.png") center center no-repeat;background-size: 50% 50%;}
@@ -54,7 +55,7 @@ input{height: 100%;width: 100%;outline: none;position: absolute;border:none;padd
 /*cir*/
 .symbolBox-cir{cursor: pointer;border-radius: 50% 50%;background: white;line-height: 2em;height: 2em;width: 2em;display: inline-block;}
 /*bal*/
-.symbolBox-bal{cursor: pointer;border-radius: 50% 50%;background: white;line-height: 2em;height: 2em;width: 2em;display: inline-block;}
+.symbolBox-bal{transform: scale(.5,.5);cursor: pointer;border-radius: 50% 50%;background: white;line-height: 2em;height: 2em;width: 2em;display: inline-block;}
 /*baf*/
 .symbolBox-baf{cursor: pointer;background: white;line-height: 2em;height: 2em;width: 2em;display: inline-block;position: relative;}
 .symbolBox-baf-filler1{background: #060709;position: absolute;width: 100%;height: 44%;top: 0;}

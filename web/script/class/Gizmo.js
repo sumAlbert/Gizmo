@@ -13,7 +13,7 @@ Gizmo=(function () {
                         'void main(){\n'+
                         '  gl_FragColor = u_FragColor;\n' +
                         '}\n'
-    }];//测试用
+    }];
 
     this.LeftBaffle=function () {
         this.inherit = GameComponents;
@@ -918,7 +918,7 @@ Gizmo=(function () {
 
         this.GREEN=[0.0,1.0,0.0,1.0];
         this.RED=[1.0,0.0,0.0,1.0];
-        this.WHITE=[1.0,1.0,1.0,0.0];
+        this.WHITE=[0.5294117647058824, 0.807843137254902, 0.9803921568627451,1.0];
 
         //TODO 包装到函数里面
         this.xformMatrix.setRotate(this.ANGLE_DEFAULT,0,0,1);//平移旋转变换矩阵
