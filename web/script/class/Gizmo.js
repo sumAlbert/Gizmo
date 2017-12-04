@@ -294,6 +294,12 @@ Gizmo=(function () {
             }
             return result;
         };
+        //更新中心点，用于判断和网格的兼容性
+        this.updateCenter=function (mousePosition) {
+            var leftUpperX=Math.floor(10*mousePosition[0])/10;
+            var leftUpperY=Math.floor(10*mousePosition[1])/10+0.1;
+            this.center=[leftUpperX+0.05*this.size,leftUpperY-0.05*this.size];
+        }
     };
 
     this.Absorber=function () {
@@ -384,6 +390,12 @@ Gizmo=(function () {
             }
             return false;
         };
+        //更新中心点，用于判断和网格的兼容性
+        this.updateCenter=function (mousePosition) {
+            var leftUpperX=Math.floor(10*mousePosition[0])/10;
+            var leftUpperY=Math.floor(10*mousePosition[1])/10+0.1;
+            this.center=[leftUpperX+0.05*this.size,leftUpperY-0.05*this.size];
+        }
     };
 
     this.Baffle=function () {
@@ -573,6 +585,7 @@ Gizmo=(function () {
                 this.update(mousePosition);
             this.drawComponents(gl,gl.LINE_LOOP,4);
         };
+
     };
     //网格
     this.GameGrid=function () {
@@ -1449,6 +1462,12 @@ Gizmo=(function () {
             //如果小球进入轨道不做碰撞判断
             if(oldBall.disappear!==0){
                 return [];
+            }
+            if(component instanceof Track){
+                if(component.centers.length>=4){
+                    component.startPointInfo=component.getStartInfo();
+                    component.stopPointInfo=component.getStopInfo();
+                }
             }
             var collisionNum=collisionDocu.num;
             var collisionTheta=collisionDocu.theta;

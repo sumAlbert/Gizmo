@@ -370,6 +370,7 @@ function main() {
                             }
                         }
                         else{
+                            playArea.playAreaComponents[playArea.playAreaComponents.length - 1].updateCenter([x,y]);
                             if(gameGrid.compatibleBoxs(absorber,1)){
                                 gameGridBox.color=gameGrid.GREEN;
                                 outEventIsOk=true;
@@ -397,6 +398,7 @@ function main() {
                             }
                         }
                         else{
+                            playArea.playAreaComponents[playArea.playAreaComponents.length - 1].updateCenter([x,y]);
                             if(gameGrid.compatibleBoxs(track,1)){
                                 gameGridBox.color=gameGrid.GREEN;
                                 outEventIsOk=true;
