@@ -19,12 +19,13 @@ Gizmo=(function () {
         this.inherit = GameComponents;
         this.inherit();
         delete this.inherit;
-
+        //属性
         this.id="LeftBaffle"+this.randomPostfix();
         this.size=1;
         this.fixFlag=false;
         this.physicsAttr=true;
         this.rotateSpeed=0.0;//旋转速度
+        //方法
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -55,12 +56,13 @@ Gizmo=(function () {
         this.inherit = GameComponents;
         this.inherit();
         delete this.inherit;
-
+        //属性
         this.id="RightBaffle"+this.randomPostfix();
         this.size=1;
         this.fixFlag=false;
         this.physicsAttr=true;
         this.rotateSpeed=0.0;//旋转速度
+        //方法
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -91,7 +93,7 @@ Gizmo=(function () {
         this.inherit = GameComponents;
         this.inherit();
         delete this.inherit;
-
+        //属性
         this.id="Track"+this.randomPostfix();
         this.size=1;
         this.fixFlag=false;
@@ -489,11 +491,12 @@ Gizmo=(function () {
         this.inherit = GameComponents;
         this.inherit();
         delete this.inherit;
-
+        //属性
         this.id="Circle"+this.randomPostfix();
         this.size=1;
         this.fixFlag=false;
         this.physicsAttr=true;
+        //方法
         this.update=function (mousePosition) {
             this.verticesArray=[];
             var leftUpperX=Math.floor(10*mousePosition[0])/10;
@@ -1006,8 +1009,9 @@ Gizmo=(function () {
     };
 
     this.PlayArea=function PlayArea() {
+        //属性
         this.gl=null;
-        this.playAreaComponents=[];
+        this.playAreaComponents=[];//添加到游戏中的游戏组件
         this.mousePosition=[0.0,0.0];
         this.SHADERS=[{
             VASHADER_SOURCE:'attribute vec4 a_Position;\n' +
@@ -1025,6 +1029,10 @@ Gizmo=(function () {
             '}\n'
         }];
         this.gameGrid=new Gizmo.GameGrid();
+        //方法
+        /**
+         * 创建playArea
+         */
         this.createPlayArea=function(){
             this.gl=getWebGLContext(document.getElementById("playArea"));
             if(!this.gl){
@@ -1045,12 +1053,19 @@ Gizmo=(function () {
             }
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
         };
+        /**
+         * 绘制所有的游戏组件
+         */
         this.drawAll=function () {
             this.gl.clear(this.gl.COLOR_BUFFER_BIT);
             for(var playAreaComponent in this.playAreaComponents){
                 this.playAreaComponents[playAreaComponent].draw(this.gl,this.mousePosition);
             }
         };
+        /**
+         * 调用物理引擎获得下一个时刻的状态
+         * @param physicsEngine
+         */
         this.physicsAll=function (physicsEngine){
             for(var playAreaComponent in this.playAreaComponents){
                 //更新下一次的状态
@@ -1113,6 +1128,9 @@ Gizmo=(function () {
                 physicsEngine.enterNextState(this.playAreaComponents[playAreaComponent],collisionDocu);
             }
         };
+        /**
+         * 初始化playArea
+         */
         this.init=function () {
             this.gameGrid.init();
             this.playAreaComponents=[];
@@ -1122,6 +1140,10 @@ Gizmo=(function () {
             this.gl.clear(this.gl.COLOR_BUFFER_BIT);
             this.drawAll();
         };
+        /**
+         * 接受按键消息
+         * @param keyID 按键键码
+         */
         this.receiveKeyDown=function (keyID) {
             switch (keyID){
                 case 87: {
@@ -1164,6 +1186,11 @@ Gizmo=(function () {
                     break;
             }
         };
+        /**
+         * 按照游戏组件的ID清理游戏组件
+         * @param id
+         * @returns {*}
+         */
         this.playAreaComponentsClearById=function (id) {
             var tempPlayAreaComponents=[];
             var tempComponentInfo=null;
@@ -1268,8 +1295,10 @@ Gizmo=(function () {
     };
 
     this.PhysicsEngine=function () {
+        //属性
         this.intervalTime=0.02;
         this.gravity=1.0;
+        //方法
         /**
          * 记录下一个时刻的状态
          * @param component

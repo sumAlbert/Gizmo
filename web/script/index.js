@@ -1,4 +1,5 @@
-function main() {
+this.mainController=function main() {
+   //属性
     var game=new Gizmo.Game();
     var playArea=game.playArea;
     var gameGrid=playArea.gameGrid;
@@ -8,8 +9,6 @@ function main() {
     init();
     runAllHandler=function () {};
     drawAllHandler=function () {};
-
-
     //点击新建事件
     document.getElementById("new-playArea").addEventListener("click",function () {
         game.modes=0;
@@ -1225,7 +1224,7 @@ function main() {
         document.getElementById("symbolBox-gridBoxS").style.cssText="border:1px solid #00ff00;";
         document.getElementById("changeColorGridBoxS").value="#00ff00";
     }
-}
+};
 
 //工具菜单栏缩放控制
 function toolMenuControl(id){
