@@ -487,7 +487,7 @@ Gizmo=(function () {
         }
     };
 
-    this.Circle=function () {
+    this.Circle=function ()  {
         this.inherit = GameComponents;
         this.inherit();
         delete this.inherit;
@@ -627,10 +627,14 @@ Gizmo=(function () {
                 this.verticesArray.push(1.0,x_start);
                 x_start=x_start+0.1;
             }
-            this.verticesArray.push(-0.999999,0.999999);
-            this.verticesArray.push(0.999999,0.999999);
-            this.verticesArray.push(0.999999,-0.999999);
-            this.verticesArray.push(0.999999,0.999999);
+            this.verticesArray.push(-0.997,0.997);
+            this.verticesArray.push(0.997,0.997);
+            this.verticesArray.push(0.997,-0.997);
+            this.verticesArray.push(0.997,0.997);
+            this.verticesArray.push(-0.997,0.997);
+            this.verticesArray.push(-0.997,-0.997);
+            this.verticesArray.push(0.997,-0.997);
+            this.verticesArray.push(-0.997,-0.997);
         };
         this.draw=function (gl,mousePosition) {
             if(!this.fixFlag)
