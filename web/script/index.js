@@ -47,22 +47,22 @@ function main() {
         }
         uploadInfo.attachmentInfo=attachmentInfo;
         var uploadInfoStr=JSON.stringify(uploadInfo);
-       $.ajax({
-           type: 'post',
-           url: 'Index',
-           data:{
-               command:'save',
-               userId:'1',
-               value:uploadInfoStr
-           },
-           success: function (data) {
-               var JSON_data=JSON.parse(data);
-               // buildByFile(JSON_data);
-           },
-           error: function () {
-               console.log("error")
-           }
-       })
+        $.ajax({
+            type: 'post',
+            url: 'Index',
+            data:{
+                command:'save',
+                userId:'1',
+                value:uploadInfoStr
+            },
+            success: function (data) {
+                var JSON_data=JSON.parse(data);
+                // buildByFile(JSON_data);
+            },
+            error: function () {
+                console.log("error")
+            }
+        })
     });
     //点击打开事件
     document.getElementById("open-playArea").addEventListener("click",function () {
@@ -716,6 +716,7 @@ function main() {
                                 gameComponents.update(playArea.mousePosition);
                                 gameComponents.size=oldComponent.size;
                                 gameComponents.angel=oldComponent.angel;
+                                gameComponents.color=oldComponent.color;
                                 playArea.playAreaComponents.push(gameComponents);
                                 gameGridBox.gridBoxSize=[oldComponent.size,oldComponent.size];
                                 game.state=1;
@@ -726,6 +727,7 @@ function main() {
                                 gameComponents.update(playArea.mousePosition);
                                 gameComponents.size=oldComponent.size;
                                 gameComponents.angel=oldComponent.angel;
+                                gameComponents.color=oldComponent.color;
                                 playArea.playAreaComponents.push(gameComponents);
                                 gameGridBox.gridBoxSize=[oldComponent.size,oldComponent.size];
                                 game.state=2;
@@ -736,6 +738,7 @@ function main() {
                                 gameComponents.update(playArea.mousePosition);
                                 gameComponents.size=oldComponent.size;
                                 gameComponents.angel=oldComponent.angel;
+                                gameComponents.color=oldComponent.color;
                                 gameComponents.scaleSize=oldComponent.scaleSize;
                                 playArea.playAreaComponents.push(gameComponents);
                                 gameGridBox.gridBoxSize=[oldComponent.size,oldComponent.size];
@@ -747,6 +750,7 @@ function main() {
                                 gameComponents.update(playArea.mousePosition);
                                 gameComponents.size=oldComponent.size;
                                 gameComponents.angel=oldComponent.angel;
+                                gameComponents.color=oldComponent.color;
                                 playArea.playAreaComponents.push(gameComponents);
                                 gameGridBox.gridBoxSize=[oldComponent.size,oldComponent.size];
                                 game.state=4;
@@ -756,6 +760,7 @@ function main() {
                                 gameComponents=new Gizmo.LeftBaffle();
                                 gameComponents.update(playArea.mousePosition);
                                 gameComponents.size=oldComponent.size;
+                                gameComponents.color=oldComponent.color;
                                 playArea.playAreaComponents.push(gameComponents);
                                 gameGridBox.gridBoxSize=[oldComponent.size,oldComponent.size];
                                 game.state=7;
@@ -765,6 +770,7 @@ function main() {
                                 gameComponents=new Gizmo.RightBaffle();
                                 gameComponents.update(playArea.mousePosition);
                                 gameComponents.size=oldComponent.size;
+                                gameComponents.color=oldComponent.color;
                                 playArea.playAreaComponents.push(gameComponents);
                                 gameGridBox.gridBoxSize=[oldComponent.size,oldComponent.size];
                                 game.state=8;
